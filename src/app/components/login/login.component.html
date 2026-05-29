@@ -1,0 +1,86 @@
+<div class="container">
+  <!-- Glowing backdrop vectors -->
+  <div class="glowSpot1 pulse-glow-spot"></div>
+  <div class="glowSpot2 pulse-glow-spot"></div>
+
+  <div class="card glass-panel">
+    <div class="header">
+      <div class="logoArea">
+        <i-lucide name="shield" class="logoIcon" size="32"></i-lucide>
+        <h2 style="font-family: var(--font-display); font-weight: 800; font-size: 1.4rem; color: #818cf8; margin: 0;">
+          NIPPON TOYOTA
+        </h2>
+      </div>
+      <h1 class="title">Incentive Portal</h1>
+      <p class="subtitle">Sign in to configure settings or track your monthly sales</p>
+    </div>
+
+    <!-- Error banner -->
+    <div *ngIf="error" class="errorBanner">
+      <i-lucide name="alert-circle" class="errorIcon" size="20"></i-lucide>
+      <span>{{ error }}</span>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" class="form">
+      <div class="inputGroup">
+        <label class="label" for="username">Username</label>
+        <div class="inputWrapper">
+          <input
+            class="input"
+            type="text"
+            id="username"
+            name="username"
+            placeholder="Enter username"
+            [(ngModel)]="username"
+            [disabled]="isLoading"
+            required
+            autocomplete="username"
+          />
+          <i-lucide name="user" class="inputIcon" size="18"></i-lucide>
+        </div>
+      </div>
+
+      <div class="inputGroup">
+        <label class="label" for="password">Password</label>
+        <div class="inputWrapper">
+          <input
+            class="input"
+            type="password"
+            id="password"
+            name="password"
+            placeholder="••••••••"
+            [(ngModel)]="password"
+            [disabled]="isLoading"
+            required
+            autocomplete="current-password"
+          />
+          <i-lucide name="lock" class="inputIcon" size="18"></i-lucide>
+        </div>
+      </div>
+
+      <button class="button" type="submit" [disabled]="isLoading">
+        <span>{{ isLoading ? 'Verifying Session...' : 'Sign In' }}</span>
+        <i-lucide *ngIf="!isLoading" name="arrow-right" size="18"></i-lucide>
+      </button>
+    </form>
+
+    <div class="hints">
+      <div class="hintsTitle">
+        <i-lucide name="key" size="14"></i-lucide>
+        <span>Intern Demo Credentials</span>
+      </div>
+      <div class="hintsGrid">
+        <div class="hintCol">
+          <h4>Admin Portal</h4>
+          <p>User: admin</p>
+          <p>Pass: admin123</p>
+        </div>
+        <div class="hintCol">
+          <h4>Sales Officer</h4>
+          <p>User: officer1</p>
+          <p>Pass: sales123</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,238 @@
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Background Glowing Elements */
+.glowSpot1 {
+  position: absolute;
+  width: 450px;
+  height: 450px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+  top: -10%;
+  left: 10%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.glowSpot2 {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(79, 70, 229, 0.1) 0%, transparent 70%);
+  bottom: -15%;
+  right: 10%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Authentication Card */
+.card {
+  width: 100%;
+  max-width: 460px;
+  padding: 45px 40px;
+  z-index: 10;
+  position: relative;
+  text-align: center;
+}
+
+.header {
+  margin-bottom: 35px;
+}
+
+.logoArea {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.logoIcon {
+  color: var(--color-accent);
+  filter: drop-shadow(0 0 8px var(--color-accent-glow));
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 6px;
+  color: var(--color-text-primary);
+}
+
+.subtitle {
+  font-size: 0.95rem;
+  color: var(--color-text-secondary);
+}
+
+/* Form Styles */
+.form {
+  text-align: left;
+}
+
+.inputGroup {
+  margin-bottom: 22px;
+  position: relative;
+}
+
+.label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary);
+  margin-bottom: 8px;
+}
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 16px;
+  color: var(--color-text-muted);
+  pointer-events: none;
+  transition: color var(--transition-fast);
+}
+
+.input {
+  width: 100%;
+  padding: 14px 16px 14px 48px;
+  background: rgba(17, 24, 39, 0.4);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--border-radius-sm);
+  color: var(--color-text-primary);
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+}
+
+.input:focus {
+  border-color: var(--color-accent);
+  background: rgba(17, 24, 39, 0.6);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.input:focus + .inputIcon {
+  color: var(--color-accent);
+}
+
+/* Submit Button */
+.button {
+  width: 100%;
+  padding: 14px;
+  background: var(--color-accent);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+  transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+  margin-top: 10px;
+}
+
+.button:hover {
+  background: var(--color-accent-hover);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45), var(--shadow-glow);
+  transform: translateY(-1px);
+}
+
+.button:active {
+  transform: translateY(0);
+}
+
+.button:disabled {
+  background: var(--color-text-muted);
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+/* Error and Alert States */
+.errorBanner {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: var(--border-radius-sm);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #fca5a5;
+  font-size: 0.9rem;
+  margin-bottom: 24px;
+  animation: slideIn 0.3s ease;
+}
+
+.errorIcon {
+  flex-shrink: 0;
+  color: var(--color-error);
+}
+
+/* Simulated Credential Hints */
+.hints {
+  margin-top: 30px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: var(--border-radius-sm);
+  padding: 16px;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  border: 1px dashed rgba(255, 255, 255, 0.05);
+}
+
+.hintsTitle {
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.hintsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  text-align: left;
+}
+
+.hintCol h4 {
+  font-size: 0.8rem;
+  margin-bottom: 2px;
+  color: var(--color-accent);
+}
+
+.hintCol p {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
