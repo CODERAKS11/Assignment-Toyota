@@ -1,0 +1,309 @@
+<div class="dashboard-container">
+  <!-- Shared Header Navigation -->
+  <header class="navbar">
+    <div class="brand">
+      <i-lucide name="shield" class="brandLogo" size="24"></i-lucide>
+      <span class="brandName">
+        NIPPON TOYOTA <span class="badge">ADMIN</span>
+      </span>
+    </div>
+
+    <div class="controls">
+      <div class="profile" *ngIf="user">
+        <div class="avatar">{{ getInitials(user.name) }}</div>
+        <div class="userInfo">
+          <p class="userName">{{ user.name }}</p>
+          <p class="userRole">System Administrator</p>
+        </div>
+      </div>
+
+      <button class="logoutButton" (click)="onLogout()">
+        <i-lucide name="log-out" size="16"></i-lucide>
+        <span>Sign Out</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Dashboard Body -->
+  <main class="main-content">
+    <div class="headerSection">
+      <div class="titleGroup">
+        <h1>Toyota Administration Engine</h1>
+        <p>Configure active dealership inventories and incentive slab structures</p>
+      </div>
+
+      <button *ngIf="activeTab === 'inventory'" class="primaryBtn" (click)="openAddCarModal()">
+        <i-lucide name="plus" size="18"></i-lucide>
+        <span>Add Model</span>
+      </button>
+    </div>
+
+    <!-- Tabs Toggle Navigation -->
+    <div class="tabsContainer">
+      <button
+        class="tabBtn"
+        [class.tabBtnActive]="activeTab === 'inventory'"
+        (click)="activeTab = 'inventory'"
+      >
+        <i-lucide name="car" size="16"></i-lucide>
+        <span>Vehicle Registry ({{ cars.length }})</span>
+      </button>
+      <button
+        class="tabBtn"
+        [class.tabBtnActive]="activeTab === 'slabs'"
+        (click)="activeTab = 'slabs'"
+      >
+        <i-lucide name="layers" size="16"></i-lucide>
+        <span>Dynamic Slabs ({{ slabs.length }})</span>
+      </button>
+    </div>
+
+    <!-- TAB 1: VEHICLE REGISTRY -->
+    <div *ngIf="activeTab === 'inventory'" class="panel glass-panel">
+      <div *ngIf="isLoadingCars" class="emptyState">
+        <i-lucide name="refresh-cw" class="animate-spin" size="24" style="margin: 0 auto 10px; display: block;"></i-lucide>
+        <p>Loading vehicle logs...</p>
+      </div>
+      
+      <div *ngIf="!isLoadingCars && cars.length === 0" class="emptyState">
+        <i-lucide name="car" size="40" class="emptyIcon" style="margin-bottom: 12px; display: block;"></i-lucide>
+        <p>No active vehicles in Registry. Click 'Add Model' above to expand inventory.</p>
+      </div>
+
+      <div *ngIf="!isLoadingCars && cars.length > 0" class="tableContainer">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Model Name</th>
+              <th>Suffix</th>
+              <th>Engine / Variant</th>
+              <th>Status</th>
+              <th style="text-align: right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let car of cars">
+              <td style="font-weight: 600;">{{ car.model_name }}</td>
+              <td>
+                <span style="font-family: var(--font-mono); font-size: 0.85rem; background: rgba(255,255,255,0.05); padding: 2px 6px; borderRadius: 4px;">
+                  {{ car.base_suffix }}
+                </span>
+              </td>
+              <td>{{ car.variant }}</td>
+              <td>
+                <span class="statusBadge" [class.statusActive]="car.active" [class.statusInactive]="!car.active">
+                  {{ car.active ? 'Active' : 'Archived' }}
+                </span>
+              </td>
+              <td style="text-align: right;">
+                <div class="actionGroup" style="justify-content: flex-end;">
+                  <button class="actionBtn" (click)="openEditCarModal(car)" title="Edit Configuration">
+                    <i-lucide name="edit-2" size="15"></i-lucide>
+                  </button>
+                  <button class="actionBtn actionBtnDelete" (click)="onDeleteCar(car.id)" title="Delete Model">
+                    <i-lucide name="trash-2" size="15"></i-lucide>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 2: INCENTIVE SLAB CONFIGURATOR -->
+    <div *ngIf="activeTab === 'slabs'" class="panel glass-panel">
+      <div style="margin-bottom: 24px;">
+        <h2 style="font-size: 1.25rem; margin-bottom: 6px;">Configure Tiered Payout Slabs</h2>
+        <p style="color: var(--color-text-secondary); font-size: 0.88rem;">
+          Define the quantity milestones Sales Officers must reach to advance to higher payout slabs.
+          Our engine guarantees sequential continuity between minimum and maximum bounds.
+        </p>
+      </div>
+
+      <!-- Slab Feedback -->
+      <div
+        *ngIf="slabFeedback"
+        class="slabWarnBanner"
+        [style.background]="slabFeedback.type === 'success' ? 'rgba(16, 185, 129, 0.08)' : 'rgba(239, 68, 68, 0.08)'"
+        [style.borderColor]="slabFeedback.type === 'success' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'"
+        [style.color]="slabFeedback.type === 'success' ? '#a7f3d0' : '#fca5a5'"
+      >
+        <i-lucide 
+          name="alert-triangle" 
+          [style.color]="slabFeedback.type === 'success' ? 'var(--color-success)' : 'var(--color-error)'" 
+          size="18"
+        ></i-lucide>
+        <span>{{ slabFeedback.message }}</span>
+      </div>
+
+      <div *ngIf="isLoadingSlabs" class="emptyState">
+        <i-lucide name="refresh-cw" class="animate-spin" size="24" style="margin: 0 auto 10px; display: block;"></i-lucide>
+        <p>Loading active slabs...</p>
+      </div>
+
+      <div *ngIf="!isLoadingSlabs && slabs.length === 0" class="emptyState">
+        <i-lucide name="layers" size="40" class="emptyIcon" style="margin-bottom: 12px; display: block;"></i-lucide>
+        <p>No incentive slabs created. Add a milestone tier to begin.</p>
+        <button class="primaryBtn" (click)="onAddSlab()" style="margin: 20px auto 0;">
+          <i-lucide name="plus" size="16"></i-lucide>
+          <span>Add Initial Tier</span>
+        </button>
+      </div>
+
+      <div *ngIf="!isLoadingSlabs && slabs.length > 0">
+        <div class="slabList">
+          <div *ngFor="let slab of slabs; let idx = index; let isLast = last" class="slabItem">
+            <span class="slabLabel">Tier {{ idx + 1 }}</span>
+
+            <!-- Minimum Bound -->
+            <div class="slabInputWrap">
+              <input
+                class="slabInput"
+                style="text-align: center; padding-right: 14px; background: rgba(255,255,255,0.01); cursor: not-allowed;"
+                type="text"
+                [value]="slab.min_volume"
+                disabled
+              />
+              <span class="slabUnit" style="right: auto; left: 12px;">Min</span>
+            </div>
+
+            <span style="color: var(--color-text-muted);">to</span>
+
+            <!-- Maximum Bound -->
+            <div *ngIf="isLast" class="slabUnlimitedBadge">
+              ∞ (Infinite / 8+ default)
+            </div>
+            
+            <div *ngIf="!isLast" class="slabInputWrap">
+              <input
+                class="slabInput"
+                type="number"
+                [min]="slab.min_volume"
+                [(ngModel)]="slab.max_volume"
+                (ngModelChange)="onUpdateSlab(idx, { max_volume: slab.max_volume })"
+              />
+              <span class="slabUnit">Cars</span>
+            </div>
+
+            <span style="color: var(--color-text-muted);">=</span>
+
+            <!-- Payout per car -->
+            <div class="slabInputWrap">
+              <input
+                class="slabInput slabInputLeftSymbol"
+                type="number"
+                min="0"
+                [(ngModel)]="slab.payout_per_car"
+              />
+              <span class="slabUnitLeft">₹</span>
+              <span class="slabUnit">/ Car</span>
+            </div>
+
+            <!-- Actions -->
+            <button
+              class="slabRemoveBtn"
+              (click)="onRemoveSlab(idx)"
+              [disabled]="slabs.length === 1"
+              title="Remove Payout Slab"
+            >
+              <i-lucide name="trash-2" size="16"></i-lucide>
+            </button>
+          </div>
+        </div>
+
+        <div class="slabWarnBanner">
+          <i-lucide name="alert-triangle" size="18" style="color: var(--color-warning); flex-shrink: 0;"></i-lucide>
+          <span>
+            Our client-side safety guard ensures ranges cascade dynamically. Modifying the maximum limit of any slab will automatically reposition adjacent limits so no overlapping values can be created.
+          </span>
+        </div>
+
+        <div style="display: flex; gap: 12px; justify-content: flex-start;">
+          <button class="primaryBtn" (click)="onSaveSlabs()" [disabled]="isSavingSlabs">
+            <i-lucide *ngIf="isSavingSlabs" name="refresh-cw" class="animate-spin" size="16"></i-lucide>
+            <i-lucide *ngIf="!isSavingSlabs" name="save" size="16"></i-lucide>
+            <span>Save Configuration</span>
+          </button>
+          <button class="secondaryBtn" (click)="onAddSlab()">
+            <i-lucide name="plus" size="16"></i-lucide>
+            <span>Add Next Tier</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- --- ADD/EDIT CAR INVENTORY MODAL OVERLAY --- -->
+  <div *ngIf="isCarModalOpen" class="modalOverlay">
+    <div class="modal glass-panel">
+      <div class="modalHeader">
+        <h2>{{ editingCar ? 'Edit Specifications' : 'Register Vehicle' }}</h2>
+        <button class="closeBtn" (click)="isCarModalOpen = false">
+          <i-lucide name="x" size="20"></i-lucide>
+        </button>
+      </div>
+
+      <form (ngSubmit)="onSaveCar()">
+        <div class="formGroup">
+          <label class="formLabel" for="modelName">Model Line Name</label>
+          <input
+            class="formInput"
+            type="text"
+            id="modelName"
+            name="modelName"
+            placeholder="e.g. Fortuner, Innova, Camry"
+            [(ngModel)]="modelName"
+            required
+          />
+        </div>
+
+        <div class="formGroup">
+          <label class="formLabel" for="baseSuffix">Base Suffix</label>
+          <input
+            class="formInput"
+            type="text"
+            id="baseSuffix"
+            name="baseSuffix"
+            placeholder="e.g. G, V, VX, ZX, GR-S"
+            [(ngModel)]="baseSuffix"
+            required
+          />
+        </div>
+
+        <div class="formGroup">
+          <label class="formLabel" for="variant">Variant / Engine</label>
+          <input
+            class="formInput"
+            type="text"
+            id="variant"
+            name="variant"
+            placeholder="e.g. Hybrid, Turbo Diesel, Petrol, PHEV"
+            [(ngModel)]="variant"
+            required
+          />
+        </div>
+
+        <div *ngIf="editingCar" class="switchGroup">
+          <input
+            class="switchInput"
+            type="checkbox"
+            id="isActive"
+            name="isActive"
+            [(ngModel)]="isActive"
+          />
+          <label class="switchLabel" for="isActive">
+            Status is Active (Make available for Sales Officers)
+          </label>
+        </div>
+
+        <div class="btnGroup">
+          <button class="secondaryBtn" type="button" (click)="isCarModalOpen = false">Cancel</button>
+          <button class="primaryBtn" type="submit">
+            <span>{{ editingCar ? 'Update Model' : 'Register Vehicle' }}</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
