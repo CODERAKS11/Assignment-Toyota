@@ -1,17 +1,15 @@
-/* Shared Dashboard Structure */
+
 .dashboard-container {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  position: relative;
+  background-color: var(--bg-base);
 }
 
-/* Header Navigation Bar */
+
 .navbar {
-  background: rgba(11, 15, 25, 0.65);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border-glass);
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-color);
   padding: 16px 40px;
   display: flex;
   align-items: center;
@@ -19,7 +17,7 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-sm);
 }
 
 .brand {
@@ -29,8 +27,7 @@
 }
 
 .brandLogo {
-  color: var(--color-success);
-  filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.3));
+  color: var(--toyota-red);
 }
 
 .brandName {
@@ -38,12 +35,15 @@
   font-size: 1.25rem;
   font-weight: 800;
   letter-spacing: -0.01em;
+  color: var(--color-text-primary);
+  display: flex;
+  align-items: center;
 }
 
 .badge {
-  background: rgba(16, 185, 129, 0.12);
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  color: #34d399;
+  background: var(--toyota-red-light);
+  border: 1px solid rgba(235, 10, 30, 0.2);
+  color: var(--toyota-red);
   padding: 3px 10px;
   border-radius: 20px;
   font-size: 0.72rem;
@@ -53,7 +53,7 @@
   margin-left: 8px;
 }
 
-/* User Controls Section */
+
 .controls {
   display: flex;
   align-items: center;
@@ -70,7 +70,7 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: var(--toyota-red);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -78,8 +78,8 @@
   font-weight: 700;
   font-size: 0.95rem;
   font-family: var(--font-display);
-  box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
-  border: 2px solid rgba(255, 255, 255, 0.1);
+  border: 2px solid #ffffff;
+  box-shadow: var(--shadow-sm);
 }
 
 .userInfo {
@@ -98,13 +98,13 @@
 }
 
 .logoutButton {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--border-glass);
+  background: #ffffff;
+  border: 1px solid var(--border-color);
   padding: 8px 16px;
   border-radius: var(--border-radius-sm);
   color: var(--color-text-primary);
   font-size: 0.85rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -113,12 +113,12 @@
 }
 
 .logoutButton:hover {
-  background: rgba(239, 68, 68, 0.1);
-  border-color: rgba(239, 68, 68, 0.3);
-  color: #fca5a5;
+  background: var(--toyota-red-light);
+  border-color: rgba(235, 10, 30, 0.25);
+  color: var(--toyota-red);
 }
 
-/* Main Dashboard Body */
+
 .main-content {
   flex: 1;
   padding: 40px;
@@ -129,17 +129,19 @@
   box-sizing: border-box;
 }
 
-/* --- SALES OFFICER TRACKER SPECIFIC STYLES --- */
+
 .layoutGrid {
   display: grid;
   grid-template-columns: 1fr 380px;
-  gap: 30px;
+  gap: 32px;
   align-items: start;
 }
 
 .sectionTitle {
-  font-size: 1.25rem;
-  margin-bottom: 20px;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 800;
+  margin-bottom: 24px;
   color: var(--color-text-primary);
   display: flex;
   align-items: center;
@@ -150,102 +152,130 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  background: rgba(17, 24, 39, 0.4);
-  border: 1px solid var(--border-glass);
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
   padding: 8px 16px;
   border-radius: var(--border-radius-sm);
   width: fit-content;
-  margin-bottom: 30px;
+  box-shadow: var(--shadow-sm);
+}
+
+.calendar-icon {
+  color: var(--toyota-red);
 }
 
 .monthLabel {
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 0.78rem;
+  font-weight: 700;
   text-transform: uppercase;
   color: var(--color-text-secondary);
+  letter-spacing: 0.05em;
 }
 
 .monthSelect {
   background: transparent;
   border: none;
   color: var(--color-text-primary);
-  font-weight: 600;
-  font-size: 0.95rem;
+  font-weight: 700;
+  font-size: 0.92rem;
   outline: none;
   cursor: pointer;
+  font-family: var(--font-display);
 }
 
 .monthSelect option {
-  background: var(--bg-base);
+  background-color: var(--bg-card);
   color: var(--color-text-primary);
 }
 
-/* Vehicle Logging Cards Grid */
+
 .carsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
+  gap: 24px;
   margin-bottom: 30px;
 }
 
 .carCard {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-sm);
   padding: 24px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 180px;
+  min-height: 200px;
   transition: all var(--transition-normal);
 }
 
 .carCard:hover {
   transform: translateY(-2px);
+  border-color: var(--border-color-hover);
   box-shadow: var(--shadow-md);
-  border-color: rgba(99, 102, 241, 0.2);
 }
 
 .carHeader {
   margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
 }
 
 .carName {
+  font-family: var(--font-display);
   font-size: 1.25rem;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--color-text-primary);
+  margin: 0;
+  line-height: 1.1;
+}
+
+.ex-showroom-price {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--toyota-red);
   margin-bottom: 4px;
+  display: block;
 }
 
 .badgeGroup {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
+  margin-top: 4px;
 }
 
 .suffixBadge {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border-glass);
-  color: var(--color-text-secondary);
-  font-family: var(--font-mono);
+  background-color: var(--bg-base);
+  border: 1px solid var(--border-color);
+  color: var(--color-text-primary);
+  font-family: var(--font-display);
   font-size: 0.72rem;
-  font-weight: 600;
-  padding: 2px 6px;
+  font-weight: 700;
+  padding: 2px 8px;
   border-radius: 4px;
+  text-transform: uppercase;
 }
 
 .variantBadge {
-  background: rgba(99, 102, 241, 0.08);
-  border: 1px solid rgba(99, 102, 241, 0.2);
-  color: #a5b4fc;
+  background-color: var(--color-info-bg);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  color: var(--color-info);
   font-size: 0.72rem;
-  font-weight: 600;
-  padding: 2px 6px;
+  font-weight: 700;
+  padding: 2px 8px;
   border-radius: 4px;
+  text-transform: uppercase;
 }
 
-/* Counter Adjuster */
+
 .adjuster {
   display: flex;
   align-items: center;
-  background: rgba(11, 15, 25, 0.5);
-  border: 1px solid var(--border-glass);
+  background-color: var(--bg-base);
+  border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
   overflow: hidden;
   width: fit-content;
@@ -255,8 +285,8 @@
   background: transparent;
   border: none;
   color: var(--color-text-secondary);
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -265,38 +295,42 @@
 }
 
 .adjustBtn:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background-color: var(--border-color);
   color: var(--color-text-primary);
 }
 
 .adjustBtn:active {
-  background: rgba(255, 255, 255, 0.08);
+  background-color: var(--border-color-hover);
 }
 
 .adjustInput {
-  width: 60px;
-  height: 42px;
+  width: 54px;
+  height: 40px;
   border: none;
   background: transparent;
   text-align: center;
   color: var(--color-text-primary);
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 800;
   font-size: 1.1rem;
   outline: none;
 }
 
-/* LIVE TRACKER SIDE PANEL */
+
 .trackerPanel {
-  padding: 30px;
+  padding: 32px;
   position: sticky;
-  top: 90px;
+  top: 96px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-lg);
 }
 
 .totalVolumeCard {
   text-align: center;
   padding-bottom: 24px;
-  border-bottom: 1px solid var(--border-glass);
+  border-bottom: 1px solid var(--border-color);
   margin-bottom: 24px;
 }
 
@@ -305,20 +339,19 @@
   font-size: 4rem;
   font-weight: 900;
   line-height: 1;
-  color: #ffffff;
+  color: var(--color-text-primary);
   margin-bottom: 4px;
-  text-shadow: 0 0 15px var(--color-accent-glow);
 }
 
 .totalLabel {
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 0.78rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   color: var(--color-text-secondary);
 }
 
-/* Slabs List inside tracker */
+
 .trackerSlabs {
   display: flex;
   flex-direction: column;
@@ -330,55 +363,56 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 14px;
+  padding: 11px 16px;
   border-radius: var(--border-radius-sm);
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid transparent;
+  background-color: var(--bg-base);
+  border: 1px solid var(--border-color);
   color: var(--color-text-secondary);
   font-size: 0.88rem;
   transition: all var(--transition-normal);
 }
 
 .trackerSlabActive {
-  background: rgba(16, 185, 129, 0.08);
+  background-color: var(--color-success-bg);
   border-color: rgba(16, 185, 129, 0.25);
-  color: #ffffff;
-  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.08);
+  color: #059669;
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
 }
 
 .slabItemRange {
-  font-weight: 500;
+  font-weight: 700;
 }
 
 .slabItemRate {
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 800;
   color: var(--color-text-primary);
 }
 
 .trackerSlabActive .slabItemRate {
-  color: #34d399;
+  color: #059669;
 }
 
-/* Progress Indicator inside tracker */
+
 .progressContainer {
   margin-bottom: 24px;
-  background: rgba(255, 255, 255, 0.03);
+  background-color: var(--bg-base);
   padding: 16px;
   border-radius: var(--border-radius-sm);
-  border: 1px solid var(--border-glass);
+  border: 1px solid var(--border-color);
 }
 
 .progressBarBG {
-  background: rgba(255, 255, 255, 0.05);
+  background-color: var(--border-color);
   height: 6px;
   border-radius: 3px;
   overflow: hidden;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .progressBarFill {
-  background: linear-gradient(90deg, var(--color-accent) 0%, #10b981 100%);
+  background: linear-gradient(90deg, var(--toyota-red) 0%, var(--color-success) 100%);
   height: 100%;
   border-radius: 3px;
   transition: width var(--transition-slow);
@@ -388,18 +422,22 @@
   font-size: 0.78rem;
   color: var(--color-text-secondary);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 6px;
+  line-height: 1.4;
+  text-align: left;
 }
 
 .progressIcon {
-  color: var(--color-accent);
+  color: var(--toyota-red);
+  flex-shrink: 0;
+  margin-top: 1px;
 }
 
-/* Payout Estimate Section */
+
 .payoutSection {
-  background: rgba(99, 102, 241, 0.05);
-  border: 1px solid rgba(99, 102, 241, 0.15);
+  background-color: var(--toyota-red-light);
+  border: 1px solid rgba(235, 10, 30, 0.15);
   border-radius: var(--border-radius-sm);
   padding: 20px;
   margin-bottom: 24px;
@@ -407,49 +445,52 @@
 }
 
 .payoutTitle {
-  font-size: 0.8rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #a5b4fc;
+  color: var(--toyota-red);
   margin-bottom: 6px;
 }
 
 .payoutAmount {
   font-family: var(--font-display);
-  font-size: 2rem;
-  font-weight: 800;
-  color: #ffffff;
-  text-shadow: 0 0 10px rgba(99, 102, 241, 0.2);
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: var(--toyota-red);
+  line-height: 1;
 }
 
 .payoutBreakdown {
-  font-size: 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 600;
   color: var(--color-text-secondary);
-  margin-top: 4px;
+  margin-top: 6px;
 }
 
 .saveBtn {
   width: 100%;
   padding: 14px;
-  background: var(--color-accent);
+  background-color: var(--toyota-red);
   color: #ffffff;
   border: none;
   border-radius: var(--border-radius-sm);
   font-size: 0.95rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.25);
+  box-shadow: 0 4px 10px rgba(235, 10, 30, 0.15);
   transition: all var(--transition-fast);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .saveBtn:hover:not(:disabled) {
-  background: var(--color-accent-hover);
-  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+  background-color: var(--toyota-red-hover);
+  box-shadow: 0 6px 15px rgba(235, 10, 30, 0.25);
   transform: translateY(-1px);
 }
 
@@ -458,9 +499,9 @@
 }
 
 .saveBtn:disabled {
-  background: var(--color-text-muted);
-  cursor: not-allowed;
+  background-color: var(--color-text-muted);
   box-shadow: none;
+  cursor: not-allowed;
 }
 
 .emptyState {
@@ -474,6 +515,88 @@
   margin-bottom: 15px;
 }
 
+
+.announcements-container {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-left: 4px solid var(--toyota-red);
+  border-radius: var(--border-radius-sm);
+  padding: 16px 20px;
+  margin-bottom: 30px;
+  box-shadow: var(--shadow-sm);
+  gap: 8px;
+}
+
+.announcement-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  background-color: var(--toyota-red);
+  border-radius: 50%;
+  box-shadow: 0 0 0 0 rgba(235, 10, 30, 0.7);
+  animation: pulse 1.6s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(235, 10, 30, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(235, 10, 30, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(235, 10, 30, 0);
+  }
+}
+
+.header-text {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--toyota-red);
+}
+
+.announcements-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.announcement-item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  text-align: left;
+}
+
+.announcement-title {
+  color: var(--color-text-primary);
+  font-weight: 700;
+  font-family: var(--font-display);
+}
+
+.announcement-divider {
+  color: var(--color-text-muted);
+}
+
+.announcement-body {
+  color: var(--color-text-secondary);
+}
+
 @media (max-width: 992px) {
   .layoutGrid {
     grid-template-columns: 1fr;
@@ -481,15 +604,62 @@
   .trackerPanel {
     position: static;
   }
-  .navbar {
-    padding: 16px 20px;
-  }
   
   .main-content {
     padding: 24px 16px;
   }
-  
-  .userInfo {
-    display: none;
+}
+
+@media print {
+  body, html {
+    background: white !important;
+    color: #111827 !important;
+  }
+  .navbar,
+  .showroom-section,
+  .monthSelectContainer,
+  .totalVolumeCard,
+  .trackerSlabs,
+  .progressContainer,
+  .saveBtn,
+  .printBtn,
+  .announcements-container {
+    display: none !important;
+  }
+  .layoutGrid {
+    display: block !important;
+  }
+  .trackerPanel {
+    border: none !important;
+    box-shadow: none !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    position: static !important;
+  }
+  .payoutSection {
+    background: white !important;
+    border: 2px dashed #111827 !important;
+    padding: 40px !important;
+    color: #111827 !important;
+    border-radius: var(--border-radius-sm) !important;
+  }
+  .payoutTitle {
+    color: #111827 !important;
+    font-size: 1.1rem !important;
+    font-weight: bold !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+  }
+  .payoutAmount {
+    color: #111827 !important;
+    font-size: 3.5rem !important;
+    font-weight: 900 !important;
+    margin-top: 10px !important;
+  }
+  .payoutBreakdown {
+    color: #4B5563 !important;
+    font-size: 1.1rem !important;
+    margin-top: 10px !important;
   }
 }

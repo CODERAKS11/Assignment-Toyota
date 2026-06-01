@@ -1,8 +1,10 @@
 <div class="dashboard-container">
-  <!-- Shared Header Navigation -->
+  
   <header class="navbar">
     <div class="brand">
-      <i-lucide name="award" class="brandLogo" size="24"></i-lucide>
+      <svg viewBox="0 0 64 64" width="28" height="28" style="fill: #EB0A1E; flex-shrink: 0; margin-right: 8px;">
+        <path d="M32 10.414c-18.126 0-32 9.347-32 21.793C0 44.243 13.52 54 32 54s32-9.757 32-21.793c0-12.446-13.874-21.793-32-21.793zm19.953 9.347c.667 2.687-2.463 6.045-12.532 7.143-.67-6.842-2.7-12.623-6.063-13.847 4.528.128 8.82.893 12.562 2.25 3.5 1.32 5.673 3.004 6.033 4.453zm-14.915 12.34c0 8.67-2.604 12.263-5.038 12.263s-5.038-3.594-5.038-12.263v-.1A59.86 59.86 0 0 0 32 32.22a59.86 59.86 0 0 0 5.038-.209v.1zm-5.04-4.832a76.94 76.94 0 0 1-4.721-.138c.765-5.67 2.796-8.965 4.722-8.965s3.957 3.296 4.722 8.964c-1.452.1-3.024.138-4.723.138zm-19.954-7.51c.358-1.44 2.512-3.116 5.98-4.434 3.755-1.37 8.068-2.143 12.618-2.27-3.364 1.224-5.393 7.005-6.063 13.847-10.07-1.098-13.2-4.456-12.535-7.143zM4.72 31.422a14.67 14.67 0 0 1 3.368-9.468c.277 4.866 6.86 8.495 16.245 9.77l-.001.38c0 11.74 3 17.965 6.346 19.25-14.328-.515-25.958-9.34-25.958-19.93zm28.545 19.932c3.36-1.34 6.405-8.02 6.405-19.252l-.001-.38c9.386-1.274 15.968-4.903 16.245-9.77a14.67 14.67 0 0 1 3.368 9.468c0 10.605-11.662 19.44-26.017 19.932z" />
+      </svg>
       <span class="brandName">
         NIPPON TOYOTA <span class="badge">Sales Officer</span>
       </span>
@@ -18,15 +20,16 @@
       </div>
 
       <button class="logoutButton" (click)="onLogout()">
-        <i-lucide name="log-out" size="16"></i-lucide>
+        <svg lucideLogOut size="16"></svg>
         <span>Sign Out</span>
       </button>
     </div>
   </header>
 
-  <!-- Main Dashboard Body -->
+  
   <main class="main-content">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 10px;">
+    <div
+      style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 10px;">
       <div>
         <h1 style="font-size: 2rem; fontWeight: 800; margin: 0;">Incentive Tracker</h1>
         <p style="color: var(--color-text-secondary); font-size: 0.95rem; margin-top: 4px;">
@@ -35,14 +38,10 @@
       </div>
 
       <div class="monthSelectContainer">
-        <i-lucide name="calendar" style="color: var(--color-accent);" size="16"></i-lucide>
+        <svg lucideCalendar style="color: var(--color-accent);" size="16"></svg>
         <span class="monthLabel">Month:</span>
-        <select 
-          class="monthSelect" 
-          [(ngModel)]="month" 
-          (ngModelChange)="onMonthChange($event)"
-          [disabled]="isLoading || isSaving"
-        >
+        <select class="monthSelect" [(ngModel)]="month" (ngModelChange)="onMonthChange($event)"
+          [disabled]="isLoading || isSaving">
           <option value="2026-01">January 2026</option>
           <option value="2026-02">February 2026</option>
           <option value="2026-03">March 2026</option>
@@ -59,36 +58,52 @@
       </div>
     </div>
 
-    <!-- Alert Feedback Banner -->
-    <div 
-      *ngIf="feedback" 
-      class="trackerSlabItem"
+    
+    <div class="announcements-container" *ngIf="announcements && announcements.length > 0">
+      <div class="announcement-header">
+        <span class="pulse-dot"></span>
+        <span class="header-text">Corporate bulletins & head office campaigns</span>
+      </div>
+      <div class="announcements-list">
+        <div class="announcement-item" *ngFor="let item of announcements">
+          <span class="announcement-title">{{ item.title }}</span>
+          <span class="announcement-divider">|</span>
+          <span class="announcement-body">{{ item.content }}</span>
+        </div>
+      </div>
+    </div>
+
+    
+    <div *ngIf="feedback" class="trackerSlabItem"
       [style.background]="feedback.type === 'success' ? 'rgba(16, 185, 129, 0.08)' : 'rgba(239, 68, 68, 0.08)'"
       [style.borderColor]="feedback.type === 'success' ? 'rgba(16, 185, 129, 0.25)' : 'rgba(239, 68, 68, 0.25)'"
       [style.color]="feedback.type === 'success' ? '#a7f3d0' : '#fca5a5'"
-      style="padding: 12px 18px; margin-bottom: 25px; display: flex; align-items: center; gap: 10px; border-radius: var(--border-radius-sm);"
-    >
-      <i-lucide [name]="feedback.type === 'success' ? 'award' : 'alert-circle'" [style.color]="feedback.type === 'success' ? 'var(--color-success)' : 'var(--color-error)'" size="20"></i-lucide>
+      style="padding: 12px 18px; margin-bottom: 25px; display: flex; align-items: center; gap: 10px; border-radius: var(--border-radius-sm);">
+      <svg *ngIf="feedback.type === 'success'" lucideAward style="color: var(--color-success);" size="20"></svg>
+      <svg *ngIf="feedback.type !== 'success'" lucideAlertCircle style="color: var(--color-error);" size="20"></svg>
       <span>{{ feedback.message }}</span>
     </div>
 
     <div *ngIf="isLoading" class="glass-panel" style="padding: 60px; text-align: center;">
-      <i-lucide name="refresh-cw" class="animate-spin" size="32" style="margin: 0 auto 12px; color: var(--color-accent); display: block;"></i-lucide>
+      <svg lucideRefreshCw class="animate-spin" size="32"
+        style="margin: 0 auto 12px; color: var(--color-accent); display: block;"></svg>
       <p>Syncing sales portal and active inventories...</p>
     </div>
 
     <div *ngIf="!isLoading" class="layoutGrid">
-      <!-- LEFT SECTION: Showroom Model Inventory Loggers -->
+      
       <div>
         <h2 class="sectionTitle">
-          <i-lucide name="shopping-bag" style="color: var(--color-accent);" size="18"></i-lucide>
+          <svg lucideShoppingBag style="color: var(--color-accent);" size="18"></svg>
           <span>Dealership Showroom Model Registry</span>
         </h2>
 
-        <div *ngIf="cars.length === 0" class="glass-panel" style="padding: 50px 20px; text-align: center; color: var(--color-text-secondary);">
-          <i-lucide name="award" style="color: var(--color-text-muted); margin-bottom: 12px; display: block;" size="36"></i-lucide>
+        <div *ngIf="cars.length === 0" class="glass-panel"
+          style="padding: 50px 20px; text-align: center; color: var(--color-text-secondary);">
+          <svg lucideAward style="color: var(--text-muted); margin-bottom: 12px; display: block;" size="36"></svg>
           <p>No active Toyota vehicles registered in showroom inventory database.</p>
-          <p style="font-size: 0.85rem; color: var(--color-text-muted); margin-top: 4px;">Please contact system administrator.</p>
+          <p style="font-size: 0.85rem; color: var(--color-text-muted); margin-top: 4px;">Please contact system
+            administrator.</p>
         </div>
 
         <div *ngIf="cars.length > 0" class="carsGrid">
@@ -99,86 +114,81 @@
                 <span class="suffixBadge">{{ car.base_suffix }}</span>
                 <span class="variantBadge">{{ car.variant }}</span>
               </div>
+              <div *ngIf="car.ex_showroom_price" style="font-size: 0.78rem; font-weight: 700; color: var(--toyota-red); margin-top: 8px; font-family: var(--font-mono);">
+                Ex-Showroom: {{ car.ex_showroom_price }}
+              </div>
             </div>
 
-            <!-- Counter Adjuster -->
+            
             <div class="adjuster">
-              <button 
-                class="adjustBtn"
-                type="button"
-                (click)="updateVolume(car.id, -1)"
-              >
-                <i-lucide name="chevron-left" size="20"></i-lucide>
+              <button class="adjustBtn" type="button" (click)="updateVolume(car.id, -1)">
+                <svg lucideChevronLeft size="20"></svg>
               </button>
-              <input
-                class="adjustInput"
-                type="number"
-                min="0"
-                [ngModel]="volumes[car.id] || 0"
-                (ngModelChange)="updateVolumeDirect(car.id, $event)"
-              />
-              <button 
-                class="adjustBtn"
-                type="button"
-                (click)="updateVolume(car.id, 1)"
-              >
-                <i-lucide name="chevron-right" size="20"></i-lucide>
+              <input class="adjustInput" type="number" min="0" [ngModel]="volumes[car.id] || 0"
+                (ngModelChange)="updateVolumeDirect(car.id, $event)" />
+              <button class="adjustBtn" type="button" (click)="updateVolume(car.id, 1)">
+                <svg lucideChevronRight size="20"></svg>
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- RIGHT SECTION: Real-time dynamic incentive engine panel -->
+      
       <div class="trackerPanel glass-panel">
         <div class="totalVolumeCard">
           <div class="totalVal">{{ totalVolume }}</div>
           <div class="totalLabel">Total Units Sold</div>
         </div>
 
-        <!-- Slabs Tracker -->
+        
         <div style="margin-bottom: 12px;">
-          <h3 style="font-size: 0.9rem; text-transform: uppercase; color: var(--color-text-secondary); margin-bottom: 10px; letter-spacing: 0.05em;">
+          <h3
+            style="font-size: 0.9rem; text-transform: uppercase; color: var(--color-text-secondary); margin-bottom: 10px; letter-spacing: 0.05em;">
             Dealer Incentive Slabs
           </h3>
           <div class="trackerSlabs">
-            <div 
-              *ngFor="let slab of slabs" 
-              class="trackerSlabItem" 
+            <div *ngFor="let slab of slabs" class="trackerSlabItem"
               [class.trackerSlabActive]="activeSlab && activeSlab.id === slab.id"
-            >
-              <span class="slabItemRange">
-                {{ slab.min_volume }}{{ slab.max_volume === null ? '+' : '–' + slab.max_volume }} Units Sold
-              </span>
-              <span class="slabItemRate">
+              style="display: flex; justify-content: space-between; align-items: center; padding: 12px 14px;">
+              <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 2px;">
+                <span class="slabItemRange">
+                  {{ slab.min_volume }}{{ slab.max_volume === null ? '+' : '–' + slab.max_volume }} Units Sold
+                </span>
+                <span *ngIf="slab.label" style="font-size: 0.72rem; color: var(--color-text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em;">
+                  {{ slab.label }}
+                </span>
+              </div>
+              <span class="slabItemRate" style="font-weight: 700;">
                 {{ formatRupee(slab.payout_per_car) }} / Car
               </span>
             </div>
           </div>
         </div>
 
-        <!-- Motivational goals progress tracker -->
+        
         <div *ngIf="slabs.length > 0" class="progressContainer">
           <ng-container *ngIf="nextSlab; else maxSlabReached">
             <div class="progressBarBG">
               <div class="progressBarFill" [style.width.%]="progressPercentage"></div>
             </div>
             <div class="progressText">
-              <i-lucide name="trending-up" class="progressIcon" size="14"></i-lucide>
+              <svg lucideTrendingUp class="progressIcon" size="14"></svg>
               <span>
-                Sell <strong>{{ carsNeededForNext }}</strong> more units to advance to <strong>{{ formatRupee(nextSlab.payout_per_car) }}/car</strong> slab!
+                Sell <strong>{{ carsNeededForNext }}</strong> more units to advance to <strong>{{
+                  formatRupee(nextSlab.payout_per_car) }}/car</strong> slab!
               </span>
             </div>
           </ng-container>
           <ng-template #maxSlabReached>
             <div class="progressText" style="color: var(--color-success);">
-              <i-lucide name="gift" style="color: var(--color-success);" size="14"></i-lucide>
+              <svg lucideGift style="color: var(--color-success);" size="14"></svg>
               <span>You have reached the maximum incentive payout tier! Keep scaling!</span>
             </div>
           </ng-template>
         </div>
 
-        <!-- Payout calculation overview -->
+        
         <div class="payoutSection">
           <div class="payoutTitle">Scheduled Incentive Payout</div>
           <div class="payoutAmount">{{ formatRupee(totalPayout) }}</div>
@@ -192,13 +202,9 @@
           </div>
         </div>
 
-        <button 
-          class="saveBtn" 
-          (click)="onSaveLogs()"
-          [disabled]="isSaving"
-        >
-          <i-lucide *ngIf="isSaving" name="refresh-cw" class="animate-spin" size="16"></i-lucide>
-          <i-lucide *ngIf="!isSaving" name="save" size="16"></i-lucide>
+        <button class="saveBtn" (click)="onSaveLogs()" [disabled]="isSaving">
+          <svg *ngIf="isSaving" lucideRefreshCw class="animate-spin" size="16"></svg>
+          <svg *ngIf="!isSaving" lucideSave size="16"></svg>
           <span>Save Monthly Volumes</span>
         </button>
       </div>

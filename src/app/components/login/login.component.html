@@ -1,13 +1,15 @@
 <div class="container">
-  <!-- Glowing backdrop vectors -->
+  
   <div class="glowSpot1 pulse-glow-spot"></div>
   <div class="glowSpot2 pulse-glow-spot"></div>
 
   <div class="card glass-panel">
     <div class="header">
       <div class="logoArea">
-        <i-lucide name="shield" class="logoIcon" size="32"></i-lucide>
-        <h2 style="font-family: var(--font-display); font-weight: 800; font-size: 1.4rem; color: #818cf8; margin: 0;">
+        <svg viewBox="0 0 64 64" width="64" height="64" style="fill: #EB0A1E; flex-shrink: 0;">
+          <path d="M32 10.414c-18.126 0-32 9.347-32 21.793C0 44.243 13.52 54 32 54s32-9.757 32-21.793c0-12.446-13.874-21.793-32-21.793zm19.953 9.347c.667 2.687-2.463 6.045-12.532 7.143-.67-6.842-2.7-12.623-6.063-13.847 4.528.128 8.82.893 12.562 2.25 3.5 1.32 5.673 3.004 6.033 4.453zm-14.915 12.34c0 8.67-2.604 12.263-5.038 12.263s-5.038-3.594-5.038-12.263v-.1A59.86 59.86 0 0 0 32 32.22a59.86 59.86 0 0 0 5.038-.209v.1zm-5.04-4.832a76.94 76.94 0 0 1-4.721-.138c.765-5.67 2.796-8.965 4.722-8.965s3.957 3.296 4.722 8.964c-1.452.1-3.024.138-4.723.138zm-19.954-7.51c.358-1.44 2.512-3.116 5.98-4.434 3.755-1.37 8.068-2.143 12.618-2.27-3.364 1.224-5.393 7.005-6.063 13.847-10.07-1.098-13.2-4.456-12.535-7.143zM4.72 31.422a14.67 14.67 0 0 1 3.368-9.468c.277 4.866 6.86 8.495 16.245 9.77l-.001.38c0 11.74 3 17.965 6.346 19.25-14.328-.515-25.958-9.34-25.958-19.93zm28.545 19.932c3.36-1.34 6.405-8.02 6.405-19.252l-.001-.38c9.386-1.274 15.968-4.903 16.245-9.77a14.67 14.67 0 0 1 3.368 9.468c0 10.605-11.662 19.44-26.017 19.932z" />
+        </svg>
+        <h2 style="font-family: var(--font-display); font-weight: 800; font-size: 1.4rem; color: #EB0A1E; margin: 0; margin-left: 12px;">
           NIPPON TOYOTA
         </h2>
       </div>
@@ -15,9 +17,9 @@
       <p class="subtitle">Sign in to configure settings or track your monthly sales</p>
     </div>
 
-    <!-- Error banner -->
+    
     <div *ngIf="error" class="errorBanner">
-      <i-lucide name="alert-circle" class="errorIcon" size="20"></i-lucide>
+      <svg lucideAlertCircle class="errorIcon" size="20"></svg>
       <span>{{ error }}</span>
     </div>
 
@@ -36,7 +38,7 @@
             required
             autocomplete="username"
           />
-          <i-lucide name="user" class="inputIcon" size="18"></i-lucide>
+          <svg lucideUser class="inputIcon" size="18"></svg>
         </div>
       </div>
 
@@ -54,19 +56,19 @@
             required
             autocomplete="current-password"
           />
-          <i-lucide name="lock" class="inputIcon" size="18"></i-lucide>
+          <svg lucideLock class="inputIcon" size="18"></svg>
         </div>
       </div>
 
       <button class="button" type="submit" [disabled]="isLoading">
         <span>{{ isLoading ? 'Verifying Session...' : 'Sign In' }}</span>
-        <i-lucide *ngIf="!isLoading" name="arrow-right" size="18"></i-lucide>
+        <svg *ngIf="!isLoading" lucideArrowRight size="18"></svg>
       </button>
     </form>
 
     <div class="hints">
       <div class="hintsTitle">
-        <i-lucide name="key" size="14"></i-lucide>
+        <svg lucideKey size="14"></svg>
         <span>Intern Demo Credentials</span>
       </div>
       <div class="hintsGrid">

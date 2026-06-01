@@ -1,79 +1,136 @@
--- Supabase Database Schema
--- Smart Incentive Calculator with Dynamic Slab Engine
--- Copy and paste this into the Supabase SQL Editor to set up the database tables.
 
--- 1. Enable UUID Extension if not enabled
-create extension if not exists "uuid-ossp";
 
--- 2. Drop existing tables if they exist (for clean setup)
-drop table if exists sales_logs;
-drop table if exists incentive_slabs;
-drop table if exists cars;
-drop table if exists users;
 
--- 3. Create Users Table
-create table users (
-  id uuid primary key default uuid_generate_v4(),
-  username text unique not null,
-  password text not null, -- SHA-256 or bcrypt hashed password
-  name text not null,
-  role text not null check (role in ('ADMIN', 'SALES_OFFICER')),
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+
+
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+
+DROP TABLE IF EXISTS announcements;
+DROP TABLE IF EXISTS audit_logs;
+DROP TABLE IF EXISTS sales_logs;
+DROP TABLE IF EXISTS incentive_slabs;
+DROP TABLE IF EXISTS cars;
+DROP TABLE IF EXISTS users;
+
+
+CREATE TABLE users (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  username VARCHAR(50) UNIQUE NOT NULL,
+  password_hash VARCHAR(256) NOT NULL,
+  name VARCHAR(100) NOT NULL,
+  role VARCHAR(20) NOT NULL CHECK (role IN ('ADMIN', 'SALES_OFFICER')),
+  email VARCHAR(100),
+  active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 4. Create Cars Table (Inventory)
-create table cars (
-  id uuid primary key default uuid_generate_v4(),
-  model_name text not null,
-  base_suffix text not null, -- e.g., "SE", "XLE", "Limited"
-  variant text not null, -- e.g., "Hybrid", "Gas", "PHEV"
-  active boolean default true not null,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+
+CREATE TABLE cars (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  model_name VARCHAR(100) NOT NULL,
+  base_suffix VARCHAR(50) NOT NULL,
+  variant VARCHAR(50) NOT NULL,
+  ex_showroom_price VARCHAR(20),
+  active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 5. Create Incentive Slabs Table (Dynamic slabs configurator)
-create table incentive_slabs (
-  id uuid primary key default uuid_generate_v4(),
-  min_volume integer not null check (min_volume >= 0),
-  max_volume integer, -- NULL represents infinity (e.g. 8+)
-  payout_per_car numeric(12, 2) not null check (payout_per_car >= 0),
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+
+CREATE TABLE incentive_slabs (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  min_volume INTEGER NOT NULL CHECK (min_volume >= 0),
+  max_volume INTEGER,
+  payout_per_car DECIMAL(12, 2) NOT NULL CHECK (payout_per_car >= 0),
+  label VARCHAR(100),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 6. Create Sales Logs Table (Saves Sales volume of car models by user per month)
-create table sales_logs (
-  id uuid primary key default uuid_generate_v4(),
-  user_id uuid not null references users(id) on delete cascade,
-  car_id uuid not null references cars(id) on delete cascade,
-  volume integer not null check (volume >= 0),
-  month text not null, -- Format: "YYYY-MM" (e.g., "2026-05")
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  updated_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  constraint unique_user_car_month unique (user_id, car_id, month)
+
+CREATE TABLE sales_logs (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  car_id UUID NOT NULL REFERENCES cars(id) ON DELETE CASCADE,
+  volume INTEGER NOT NULL CHECK (volume >= 0),
+  month VARCHAR(7) NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  CONSTRAINT unique_user_car_month UNIQUE (user_id, car_id, month)
 );
 
--- 7. Add indexes for performance
-create index idx_sales_logs_user_month on sales_logs(user_id, month);
-create index idx_users_username on users(username);
 
--- 8. Seed Default Data (Admin & Sales Officer accounts, some Toyota Models, and Slabs)
--- Password for admin: admin123
--- Password for officer: sales123
--- Hashed passwords below are simple SHA-256 for local/mock demonstration consistency.
-insert into users (id, username, password, name, role) values
-  ('a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', 'admin', '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918', 'Toyota Admin Portal', 'ADMIN'),
-  ('b2c3d4e5-f6a7-8b9c-0d1e-2f3a4b5c6d7e', 'officer1', '9857d42cf38a0f0d235889ff22cb434e3416ffdf4fa87679cfb6fa0f19c99616', 'John Doe (Sales Officer)', 'SALES_OFFICER'),
-  ('c3d4e5f6-a7b8-9c0d-1e2f-3a4b5c6d7e8f', 'officer2', '9857d42cf38a0f0d235889ff22cb434e3416ffdf4fa87679cfb6fa0f19c99616', 'Sarah Smith (Sales Officer)', 'SALES_OFFICER');
+CREATE TABLE audit_logs (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  action VARCHAR(100) NOT NULL,
+  details TEXT NOT NULL,
+  ip_address VARCHAR(45),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
 
-insert into cars (id, model_name, base_suffix, variant, active) values
-  ('d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f9a', 'Camry', 'SE', 'Hybrid', true),
-  ('e5f6a7b8-c9d0-1e2f-3a4b-5c6d7e8f9a0b', 'RAV4', 'XLE', 'Hybrid', true),
-  ('f6a7b8c9-d0e1-2f3a-4b5c-6d7e8f9a0b1c', 'Corolla', 'LE', 'Gas', true),
-  ('a7b8c9d0-e1f2-3a4b-5c6d-7e8f9a0b1c2d', 'Highlander', 'Limited', 'PHEV', true);
 
-insert into incentive_slabs (id, min_volume, max_volume, payout_per_car) values
-  ('11111111-2222-3333-4444-555555555555', 1, 3, 1000.00),
-  ('22222222-3333-4444-5555-666666666666', 4, 7, 2000.00),
-  ('33333333-4444-5555-6666-777777777777', 8, null, 3500.00);
+CREATE TABLE announcements (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  title VARCHAR(200) NOT NULL,
+  content TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+
+CREATE INDEX idx_sales_logs_user_month ON sales_logs(user_id, month);
+CREATE INDEX idx_users_username ON users(username);
+CREATE INDEX idx_cars_active ON cars(active);
+CREATE INDEX idx_audit_logs_created ON audit_logs(created_at DESC);
+
+
+ALTER TABLE users DISABLE ROW LEVEL SECURITY;
+ALTER TABLE cars DISABLE ROW LEVEL SECURITY;
+ALTER TABLE incentive_slabs DISABLE ROW LEVEL SECURITY;
+ALTER TABLE sales_logs DISABLE ROW LEVEL SECURITY;
+ALTER TABLE audit_logs DISABLE ROW LEVEL SECURITY;
+ALTER TABLE announcements DISABLE ROW LEVEL SECURITY;
+
+
+
+
+
+
+
+
+
+INSERT INTO users (id, username, password_hash, name, role, email) VALUES
+  ('a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', 'admin',    '$2a$10$tzyjnfufiJBt2X4j9AfzO.H4hphhyM2GHKMSBlUCa/Kg30Floppii', 'Dealership Admin',          'ADMIN',          'admin@nippont.com'),
+  ('b2c3d4e5-f6a7-8b9c-0d1e-2f3a4b5c6d7e', 'officer1', '$2a$10$LzFXb35yVO2Di28.PoFps.wlge1y1mX.B6./vQhUstrMUG6F8YOa6', 'Rahul Sharma',              'SALES_OFFICER',  'rahul@nippont.com'),
+  ('c3d4e5f6-a7b8-9c0d-1e2f-3a4b5c6d7e8f', 'officer2', '$2a$10$LzFXb35yVO2Di28.PoFps.wlge1y1mX.B6./vQhUstrMUG6F8YOa6', 'Priya Menon',               'SALES_OFFICER',  'priya@nippont.com');
+
+
+INSERT INTO cars (model_name, base_suffix, variant, ex_showroom_price, active) VALUES
+  ('Glanza',               'V',         'Petrol AMT',       '₹10.42L', TRUE),
+  ('Urban Cruiser Hyryder','S+',        'Strong Hybrid',    '₹16.73L', TRUE),
+  ('Rumion',               'V',         'Petrol MT',        '₹11.69L', TRUE),
+  ('Innova Crysta',        'VX',        'Diesel MT',        '₹21.34L', TRUE),
+  ('Innova Hycross',       'ZX(O)',     'Strong Hybrid',    '₹30.98L', TRUE),
+  ('Fortuner',             'Legender',  'Diesel 4x4 AT',   '₹45.87L', TRUE),
+  ('Camry',                'Elegant',   'Hybrid',           '₹48.25L', TRUE),
+  ('Hilux',                'High',      'Diesel 4x4 AT',   '₹37.90L', TRUE);
+
+
+INSERT INTO incentive_slabs (min_volume, max_volume, payout_per_car, label) VALUES
+  (1,  3,    800,  'Base Tier'),
+  (4,  7,    1500, 'Silver Tier'),
+  (8,  12,   2500, 'Gold Tier'),
+  (13, 20,   4000, 'Platinum Tier'),
+  (21, NULL, 6000, 'Diamond Tier');
+
+
+INSERT INTO audit_logs (action, details) VALUES 
+  ('SYSTEM_INIT', 'Toyota Dealership SQL Schemas successfully loaded and initialized.');
+
+
+INSERT INTO announcements (title, content) VALUES
+  ('Toyota India Payout Campaign', 'Dynamic commission ranges updated for Q2. Sell more hybrid models to achieve higher commission slabs.'),
+  ('Dynamic Incentive Slabs Active', 'Nippon Toyota''s 5-tier dynamic commission program is active. Ensure all showroom logs are updated before June 1st, 10 PM IST.');

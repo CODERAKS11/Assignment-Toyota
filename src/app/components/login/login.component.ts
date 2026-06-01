@@ -2,13 +2,22 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { LucideAngularModule, Shield, AlertCircle, User, Lock, ArrowRight, Key } from '@lucide/angular';
+import { LucideAlertCircle, LucideUser, LucideLock, LucideArrowRight, LucideKey } from '@lucide/angular';
 import { AuthService } from '../../services/auth.service';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    LucideAlertCircle,
+    LucideUser,
+    LucideLock,
+    LucideArrowRight,
+    LucideKey
+  ],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
@@ -18,16 +27,10 @@ export class LoginComponent {
   error: string | null = null;
   isLoading = false;
 
-  readonly shield = Shield;
-  readonly alertCircle = AlertCircle;
-  readonly user = User;
-  readonly lock = Lock;
-  readonly arrowRight = ArrowRight;
-  readonly key = Key;
-
   constructor(
     private auth: AuthService,
-    private router: Router
+    private router: Router,
+    private notification: NotificationService
   ) {}
 
   async onSubmit() {
@@ -40,16 +43,19 @@ export class LoginComponent {
     this.error = null;
 
     try {
-      // Small simulated delay for premium feel
+      
       await new Promise(resolve => setTimeout(resolve, 500));
       
       const success = await this.auth.login(this.username.trim(), this.password);
       if (success) {
         const currentUser = this.auth.getCurrentUser();
-        if (currentUser?.role === 'ADMIN') {
-          this.router.navigate(['/admin']);
-        } else if (currentUser?.role === 'SALES_OFFICER') {
-          this.router.navigate(['/sales-officer']);
+        if (currentUser) {
+          this.notification.success(`Welcome back, ${currentUser.name}! Directing you to ${currentUser.role === 'ADMIN' ? 'Admin console' : 'sales tracker'}.`);
+          if (currentUser.role === 'ADMIN') {
+            this.router.navigate(['/admin']);
+          } else if (currentUser.role === 'SALES_OFFICER') {
+            this.router.navigate(['/sales-officer']);
+          }
         }
       } else {
         this.error = 'Invalid username or password.';

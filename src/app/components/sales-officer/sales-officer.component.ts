@@ -3,26 +3,40 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
-  LucideAngularModule,
-  Award,
-  Calendar,
-  ChevronLeft,
-  ChevronRight,
-  Save,
-  TrendingUp,
-  RefreshCw,
-  AlertCircle,
-  ShoppingBag,
-  Gift,
-  LogOut
+  LucideAward,
+  LucideCalendar,
+  LucideChevronLeft,
+  LucideChevronRight,
+  LucideSave,
+  LucideTrendingUp,
+  LucideRefreshCw,
+  LucideAlertCircle,
+  LucideShoppingBag,
+  LucideGift,
+  LucideLogOut
 } from '@lucide/angular';
 import { DatabaseService, Car as Vehicle, IncentiveSlab as Slab, User } from '../../services/database.service';
 import { AuthService } from '../../services/auth.service';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-sales-officer',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    LucideAward,
+    LucideCalendar,
+    LucideChevronLeft,
+    LucideChevronRight,
+    LucideSave,
+    LucideTrendingUp,
+    LucideRefreshCw,
+    LucideAlertCircle,
+    LucideShoppingBag,
+    LucideGift,
+    LucideLogOut
+  ],
   templateUrl: './sales-officer.component.html',
   styleUrls: ['./sales-officer.component.css']
 })
@@ -30,35 +44,24 @@ export class SalesOfficerComponent implements OnInit {
   user: User | null = null;
   cars: Vehicle[] = [];
   slabs: Slab[] = [];
+  announcements: any[] = [];
 
-  // Monthly Date Picker
+  
   month = '';
   
-  // Volumes state map (carId -> volume)
+  
   volumes: { [carId: string]: number } = {};
 
-  // Action/Loading States
+  
   isLoading = true;
   isSaving = false;
   feedback: { type: 'success' | 'error'; message: string } | null = null;
 
-  // Icons
-  readonly award = Award;
-  readonly calendar = Calendar;
-  readonly chevronLeft = ChevronLeft;
-  readonly chevronRight = ChevronRight;
-  readonly save = Save;
-  readonly trendingUp = TrendingUp;
-  readonly refreshCw = RefreshCw;
-  readonly alertCircle = AlertCircle;
-  readonly shoppingBag = ShoppingBag;
-  readonly gift = Gift;
-  readonly logOut = LogOut;
-
   constructor(
     private db: DatabaseService,
     private auth: AuthService,
-    private router: Router
+    private router: Router,
+    private notification: NotificationService
   ) {
     const d = new Date();
     this.month = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
@@ -85,23 +88,25 @@ export class SalesOfficerComponent implements OnInit {
   async loadPortalConfig() {
     this.isLoading = true;
     try {
-      const [carsData, slabsData] = await Promise.all([
+      const [carsData, slabsData, announcementsData] = await Promise.all([
         this.db.getCars(),
-        this.db.getSlabs()
+        this.db.getSlabs(),
+        this.db.getAnnouncements()
       ]);
 
-      // Display active showroom cars
+      
       this.cars = carsData.filter(c => c.active);
       this.slabs = slabsData;
+      this.announcements = announcementsData;
 
-      // Default volumes
+      
       const initialVols: { [key: string]: number } = {};
       this.cars.forEach(c => {
         initialVols[c.id] = 0;
       });
       this.volumes = initialVols;
 
-      // Load logged logs
+      
       await this.fetchMonthlyLogs(this.month, initialVols);
     } catch (err) {
       console.error('Failed to load configuration:', err);
@@ -127,7 +132,6 @@ export class SalesOfficerComponent implements OnInit {
   }
 
   async onMonthChange(newMonth: string) {
-    this.feedback = null;
     const baseVols: { [key: string]: number } = {};
     this.cars.forEach(c => {
       baseVols[c.id] = 0;
@@ -135,18 +139,22 @@ export class SalesOfficerComponent implements OnInit {
     this.volumes = baseVols;
 
     this.isLoading = true;
-    await this.fetchMonthlyLogs(newMonth, baseVols);
-    this.isLoading = false;
+    try {
+      await this.fetchMonthlyLogs(newMonth, baseVols);
+      this.notification.info(`Switched billing month to ${newMonth} and synced sales logs.`);
+    } catch (err) {
+      this.notification.error('Failed to sync sales logs for the selected month.');
+    } finally {
+      this.isLoading = false;
+    }
   }
 
   updateVolume(carId: string, val: number) {
-    this.feedback = null;
     const current = this.volumes[carId] || 0;
     this.volumes[carId] = Math.max(0, current + val);
   }
 
   updateVolumeDirect(carId: string, val: any) {
-    this.feedback = null;
     const parsed = parseInt(val) || 0;
     this.volumes[carId] = Math.max(0, parsed);
   }
@@ -154,7 +162,6 @@ export class SalesOfficerComponent implements OnInit {
   async onSaveLogs() {
     if (!this.user) return;
     this.isSaving = true;
-    this.feedback = null;
 
     try {
       const payload = Object.entries(this.volumes).map(([carId, vol]) => ({
@@ -163,16 +170,16 @@ export class SalesOfficerComponent implements OnInit {
       }));
 
       await this.db.saveSalesLogs(this.user.id, this.month, payload);
-      this.feedback = { type: 'success', message: 'Monthly sales volumes logged successfully!' };
+      this.notification.success(`Successfully logged sales volumes for ${this.month}!`);
     } catch (err) {
       console.error('Error saving volumes:', err);
-      this.feedback = { type: 'error', message: 'Network connection failure while saving volumes.' };
+      this.notification.error('Connection failure while saving monthly volumes.');
     } finally {
       this.isSaving = false;
     }
   }
 
-  // --- MATH CALCULATION ENGINE ---
+  
 
   get totalVolume(): number {
     return Object.values(this.volumes).reduce((a, b) => a + b, 0);

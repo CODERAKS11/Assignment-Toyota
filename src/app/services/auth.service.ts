@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { lastValueFrom } from 'rxjs';
 import { DatabaseService, User } from './database.service';
 
 @Injectable({
@@ -7,24 +9,14 @@ import { DatabaseService, User } from './database.service';
 })
 export class AuthService {
   private currentUser: User | null = null;
+  private apiUrl = 'http://localhost:3000/api';
 
   constructor(
     private db: DatabaseService,
-    private router: Router
+    private router: Router,
+    private http: HttpClient
   ) {
     this.loadSession();
-  }
-
-  /**
-   * Browser-native SHA-256 password hashing.
-   * Leverages browser Web Crypto APIs. Fast and completely client-side.
-   */
-  async hashPassword(password: string): Promise<string> {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(password);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
   }
 
   private loadSession() {
@@ -35,29 +27,34 @@ export class AuthService {
         this.currentUser = JSON.parse(session);
       } catch (e) {
         localStorage.removeItem('toyota_session');
+        localStorage.removeItem('toyota_token');
       }
     }
   }
 
   async login(username: string, password: string): Promise<boolean> {
-    const user = await this.db.getUserByUsername(username);
-    if (!user) return false;
+    try {
+      const res = await lastValueFrom(
+        this.http.post<{ token: string; user: any }>(`${this.apiUrl}/auth/login`, { username, password })
+      );
 
-    // Hash password and compare
-    const hashedInput = await this.hashPassword(password);
-    if (hashedInput === user.password) {
-      // Exclude password from session storage for security
-      const { password: _, ...userSession } = user;
-      this.currentUser = userSession as User;
-      localStorage.setItem('toyota_session', JSON.stringify(this.currentUser));
-      return true;
+      if (res && res.token && res.user) {
+        this.currentUser = res.user as User;
+        localStorage.setItem('toyota_token', res.token);
+        localStorage.setItem('toyota_session', JSON.stringify(this.currentUser));
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error('Toyota DMS Client: Credentials verification failed on backend:', err);
+      return false;
     }
-    return false;
   }
 
   logout() {
     this.currentUser = null;
     localStorage.removeItem('toyota_session');
+    localStorage.removeItem('toyota_token');
     this.router.navigate(['/']);
   }
 
