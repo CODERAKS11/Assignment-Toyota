@@ -56,3 +56,6 @@ app.listen(PORT, () => {
   console.log(`Target database endpoints: ${process.env.SUPABASE_URL}`);
   console.log(`================================================================`);
 });
+
+module.exports = app;
+
