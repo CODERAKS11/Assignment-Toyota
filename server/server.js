@@ -9,6 +9,8 @@ const slabsRoutes = require('./routes/slabs.routes');
 const salesRoutes = require('./routes/sales.routes');
 const analyticsRoutes = require('./routes/analytics.routes');
 const announcementsRoutes = require('./routes/announcements.routes');
+const usersRoutes = require('./routes/users.routes');
+const targetsRoutes = require('./routes/targets.routes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -31,6 +33,8 @@ app.use('/api/slabs', slabsRoutes);
 app.use('/api/sales-logs', salesRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/announcements', announcementsRoutes);
+app.use('/api/users', usersRoutes);
+app.use('/api/targets', targetsRoutes);
 
 
 app.get('/health', (req, res) => {

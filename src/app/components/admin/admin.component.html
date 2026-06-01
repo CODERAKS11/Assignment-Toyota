@@ -1,9 +1,10 @@
 <div class="dashboard-container">
-  
+
   <header class="navbar">
     <div class="brand">
       <svg viewBox="0 0 64 64" width="28" height="28" style="fill: #EB0A1E; flex-shrink: 0; margin-right: 8px;">
-        <path d="M32 10.414c-18.126 0-32 9.347-32 21.793C0 44.243 13.52 54 32 54s32-9.757 32-21.793c0-12.446-13.874-21.793-32-21.793zm19.953 9.347c.667 2.687-2.463 6.045-12.532 7.143-.67-6.842-2.7-12.623-6.063-13.847 4.528.128 8.82.893 12.562 2.25 3.5 1.32 5.673 3.004 6.033 4.453zm-14.915 12.34c0 8.67-2.604 12.263-5.038 12.263s-5.038-3.594-5.038-12.263v-.1A59.86 59.86 0 0 0 32 32.22a59.86 59.86 0 0 0 5.038-.209v.1zm-5.04-4.832a76.94 76.94 0 0 1-4.721-.138c.765-5.67 2.796-8.965 4.722-8.965s3.957 3.296 4.722 8.964c-1.452.1-3.024.138-4.723.138zm-19.954-7.51c.358-1.44 2.512-3.116 5.98-4.434 3.755-1.37 8.068-2.143 12.618-2.27-3.364 1.224-5.393 7.005-6.063 13.847-10.07-1.098-13.2-4.456-12.535-7.143zM4.72 31.422a14.67 14.67 0 0 1 3.368-9.468c.277 4.866 6.86 8.495 16.245 9.77l-.001.38c0 11.74 3 17.965 6.346 19.25-14.328-.515-25.958-9.34-25.958-19.93zm28.545 19.932c3.36-1.34 6.405-8.02 6.405-19.252l-.001-.38c9.386-1.274 15.968-4.903 16.245-9.77a14.67 14.67 0 0 1 3.368 9.468c0 10.605-11.662 19.44-26.017 19.932z" />
+        <path
+          d="M32 10.414c-18.126 0-32 9.347-32 21.793C0 44.243 13.52 54 32 54s32-9.757 32-21.793c0-12.446-13.874-21.793-32-21.793zm19.953 9.347c.667 2.687-2.463 6.045-12.532 7.143-.67-6.842-2.7-12.623-6.063-13.847 4.528.128 8.82.893 12.562 2.25 3.5 1.32 5.673 3.004 6.033 4.453zm-14.915 12.34c0 8.67-2.604 12.263-5.038 12.263s-5.038-3.594-5.038-12.263v-.1A59.86 59.86 0 0 0 32 32.22a59.86 59.86 0 0 0 5.038-.209v.1zm-5.04-4.832a76.94 76.94 0 0 1-4.721-.138c.765-5.67 2.796-8.965 4.722-8.965s3.957 3.296 4.722 8.964c-1.452.1-3.024.138-4.723.138zm-19.954-7.51c.358-1.44 2.512-3.116 5.98-4.434 3.755-1.37 8.068-2.143 12.618-2.27-3.364 1.224-5.393 7.005-6.063 13.847-10.07-1.098-13.2-4.456-12.535-7.143zM4.72 31.422a14.67 14.67 0 0 1 3.368-9.468c.277 4.866 6.86 8.495 16.245 9.77l-.001.38c0 11.74 3 17.965 6.346 19.25-14.328-.515-25.958-9.34-25.958-19.93zm28.545 19.932c3.36-1.34 6.405-8.02 6.405-19.252l-.001-.38c9.386-1.274 15.968-4.903 16.245-9.77a14.67 14.67 0 0 1 3.368 9.468c0 10.605-11.662 19.44-26.017 19.932z" />
       </svg>
       <span class="brandName">
         NIPPON TOYOTA <span class="badge">ADMIN</span>
@@ -26,7 +27,7 @@
     </div>
   </header>
 
-  
+
   <main class="main-content">
     <div class="headerSection">
       <div class="titleGroup">
@@ -34,13 +35,21 @@
         <p>Configure active dealership inventories and incentive slab structures</p>
       </div>
 
-      <button *ngIf="activeTab === 'inventory'" class="primaryBtn" (click)="openAddCarModal()">
-        <svg lucidePlus size="18"></svg>
-        <span>Add Model</span>
-      </button>
+      <div style="display: flex; gap: 10px;">
+        <label *ngIf="activeTab === 'inventory'" class="primaryBtn"
+          style="background-color: transparent; border: 1px solid var(--border-color); color: var(--color-text-primary); cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
+          <svg lucideDownload size="18" style="transform: rotate(180deg); color: var(--toyota-red);"></svg>
+          <span>Bulk Import CSV</span>
+          <input type="file" accept=".csv" style="display: none;" (change)="onCSVSelected($event)" />
+        </label>
+        <button *ngIf="activeTab === 'inventory'" class="primaryBtn" (click)="openAddCarModal()">
+          <svg lucidePlus size="18"></svg>
+          <span>Add Model</span>
+        </button>
+      </div>
     </div>
 
-    
+
     <div class="tabsContainer">
       <button class="tabBtn" [class.tabBtnActive]="activeTab === 'inventory'" (click)="activeTab = 'inventory'">
         <svg lucideCar size="16"></svg>
@@ -54,9 +63,17 @@
         <svg lucideTrendingUp size="16"></svg>
         <span>Analytics Dashboard</span>
       </button>
+      <button class="tabBtn" [class.tabBtnActive]="activeTab === 'officers'" (click)="activeTab = 'officers'">
+        <svg lucideUsers size="16"></svg>
+        <span>Sales Officers ({{ officers.length }})</span>
+      </button>
+      <button class="tabBtn" [class.tabBtnActive]="activeTab === 'reports'" (click)="activeTab = 'reports'">
+        <svg lucideAward size="16"></svg>
+        <span>Reports & Audits</span>
+      </button>
     </div>
 
-    
+
     <div *ngIf="activeTab === 'inventory'" class="panel glass-panel">
       <div *ngIf="isLoadingCars" class="emptyState">
         <svg lucideRefreshCw class="animate-spin" size="24" style="margin: 0 auto 10px; display: block;"></svg>
@@ -75,8 +92,10 @@
               <th>Model Name</th>
               <th>Suffix</th>
               <th>Engine / Variant</th>
-              <th>Ex-Showroom Price</th>
-              <th>Status</th>
+              <th>Ex-Showroom</th>
+              <th>Segment</th>
+              <th>Incentive</th>
+              <th>Launch Status</th>
               <th style="text-align: right;">Actions</th>
             </tr>
           </thead>
@@ -92,8 +111,23 @@
               <td>{{ car.variant }}</td>
               <td style="font-weight: 700; color: var(--toyota-red);">{{ car.ex_showroom_price || 'N/A' }}</td>
               <td>
-                <span class="statusBadge" [class.statusActive]="car.active" [class.statusInactive]="!car.active">
-                  {{ car.active ? 'Active' : 'Archived' }}
+                <span class="statusBadge"
+                  style="background: rgba(0, 0, 0, 0.05); color: var(--color-text-secondary); font-size: 0.75rem; text-transform: uppercase;">
+                  {{ car.segment || 'SUV' }}
+                </span>
+              </td>
+              <td>
+                <span class="statusBadge" [class.statusActive]="car.eligible_for_incentive"
+                  [class.statusInactive]="!car.eligible_for_incentive">
+                  {{ car.eligible_for_incentive ? 'Eligible' : 'Excluded' }}
+                </span>
+              </td>
+              <td>
+                <span class="statusBadge" [class.statusActive]="car.launch_status === 'ACTIVE'"
+                  [class.statusInactive]="car.launch_status === 'DISCONTINUED'"
+                  [style.background]="car.launch_status === 'UPCOMING' ? 'rgba(59, 130, 246, 0.1)' : ''"
+                  [style.color]="car.launch_status === 'UPCOMING' ? '#3b82f6' : ''">
+                  {{ car.launch_status || 'ACTIVE' }}
                 </span>
               </td>
               <td style="text-align: right;">
@@ -112,114 +146,306 @@
       </div>
     </div>
 
-    
+
     <div *ngIf="activeTab === 'slabs'" class="panel glass-panel">
-      <div style="margin-bottom: 24px;">
-        <h2 style="font-size: 1.25rem; margin-bottom: 6px;">Configure Tiered Payout Slabs</h2>
-        <p style="color: var(--color-text-secondary); font-size: 0.88rem;">
-          Define the quantity milestones Sales Officers must reach to advance to higher payout slabs.
-          Our engine guarantees sequential continuity between minimum and maximum bounds.
-        </p>
+
+      <div
+        style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px;">
+        <div>
+          <h2 style="font-size: 1.25rem; margin-bottom: 6px;">Configure Incentive Slab Schemes</h2>
+          <p style="color: var(--color-text-secondary); font-size: 0.88rem;">
+            Establish dynamic payout versions, set activation dates, and configure per-model overrides.
+          </p>
+        </div>
+
+
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div class="analytics-picker-group"
+            style="margin: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 4px;">
+            <label class="analytics-label"
+              style="font-size: 0.65rem; text-transform: uppercase; margin: 0; font-weight: 700; color: var(--color-accent);">Active
+              Version</label>
+            <select class="analytics-picker"
+              style="min-width: 200px; background: rgba(0, 0, 0, 0.2); color: var(--color-text-primary); border: 1px solid var(--border-color); border-radius: 4px; padding: 6px 12px;"
+              [ngModel]="selectedSchemeId" (ngModelChange)="fetchSlabsAndOverridesForScheme($event)">
+              <option *ngFor="let s of schemes" [value]="s.id">
+                {{ s.name }} (Starts {{ s.activation_date }})
+              </option>
+            </select>
+          </div>
+          <button class="primaryBtn" style="padding: 8px 12px; font-size: 0.8rem; height: 38px; margin-top: auto;"
+            (click)="openAddSchemeModal()">
+            <svg lucidePlus size="14"></svg>
+            <span>New Scheme</span>
+          </button>
+          <button *ngIf="selectedSchemeId && !isSchemeReadOnly" class="secondaryBtn"
+            style="padding: 8px 12px; font-size: 0.8rem; height: 38px; margin-top: auto; background-color: rgba(239, 68, 68, 0.15); color: #f87171; border-color: rgba(239, 68, 68, 0.3);"
+            (click)="onDeleteScheme()">
+            <svg lucideTrash2 size="14"></svg>
+            <span>Delete</span>
+          </button>
+        </div>
       </div>
 
-      
+
+      <!-- <div *ngIf="isHistoricalScheme" class="slabWarnBanner"
+        style="background: rgba(59, 130, 246, 0.08); border-color: rgba(59, 130, 246, 0.25); color: #93c5fd; margin-bottom: 20px;">
+        <svg lucideAlertTriangle size="18" style="color: #60a5fa;"></svg>
+      </div> -->
+
       <div *ngIf="slabFeedback" class="slabWarnBanner"
         [style.background]="slabFeedback.type === 'success' ? 'rgba(16, 185, 129, 0.08)' : 'rgba(239, 68, 68, 0.08)'"
         [style.borderColor]="slabFeedback.type === 'success' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'"
-        [style.color]="slabFeedback.type === 'success' ? '#a7f3d0' : '#fca5a5'">
+        [style.color]="slabFeedback.type === 'success' ? '#a7f3d0' : '#fca5a5'" style="margin-bottom: 20px;">
         <svg lucideAlertTriangle
           [style.color]="slabFeedback.type === 'success' ? 'var(--color-success)' : 'var(--color-error)'"
           size="18"></svg>
         <span>{{ slabFeedback.message }}</span>
       </div>
 
-      <div *ngIf="isLoadingSlabs" class="emptyState">
+      <div *ngIf="isLoadingSlabs" class="emptyState" style="padding: 40px 0;">
         <svg lucideRefreshCw class="animate-spin" size="24" style="margin: 0 auto 10px; display: block;"></svg>
-        <p>Loading active slabs...</p>
+        <p>Loading active slabs and overrides...</p>
       </div>
 
-      <div *ngIf="!isLoadingSlabs && slabs.length === 0" class="emptyState">
-        <svg lucideLayers size="40" class="emptyIcon" style="margin-bottom: 12px; display: block;"></svg>
-        <p>No incentive slabs created. Add a milestone tier to begin.</p>
-        <button class="primaryBtn" (click)="onAddSlab()" style="margin: 20px auto 0;">
-          <svg lucidePlus size="16"></svg>
-          <span>Add Initial Tier</span>
-        </button>
-      </div>
 
-      <div *ngIf="!isLoadingSlabs && slabs.length > 0">
-        <div class="slabList">
-          <div *ngFor="let slab of slabs; let idx = index; let isLast = last" class="slabItem" style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px;">
-            <span class="slabLabel" style="min-width: 60px;">Tier {{ idx + 1 }}</span>
- 
-            
-            <div class="slabInputWrap" style="width: 100px;">
-              <input class="slabInput"
-                style="text-align: center; padding: 10px 12px 10px 40px; background: rgba(255,255,255,0.01); cursor: not-allowed;"
-                type="text" [value]="slab.min_volume" disabled />
-              <span class="slabUnit" style="right: auto; left: 10px;">Min</span>
-            </div>
- 
-            <span style="color: var(--color-text-muted);">to</span>
- 
-            
-            <div *ngIf="isLast" class="slabUnlimitedBadge" style="width: 140px; padding: 10px 12px;">
-              ∞ (Infinite / 21+)
-            </div>
- 
-            <div *ngIf="!isLast" class="slabInputWrap" style="width: 120px;">
-              <input class="slabInput" style="padding-right: 48px;" type="number" [min]="slab.min_volume" [(ngModel)]="slab.max_volume"
-                (ngModelChange)="onUpdateSlab(idx, { max_volume: slab.max_volume })" />
-              <span class="slabUnit">Cars</span>
-            </div>
- 
-            <span style="color: var(--color-text-muted);">=</span>
- 
-            
-            <div class="slabInputWrap" style="width: 130px;">
-              <input class="slabInput slabInputLeftSymbol" style="padding-left: 28px; padding-right: 48px;" type="number" min="0" [(ngModel)]="slab.payout_per_car" />
-              <span class="slabUnitLeft" style="left: 10px;">₹</span>
-              <span class="slabUnit">/ Car</span>
+      <div *ngIf="!isLoadingSlabs">
+
+
+        <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 30px; margin-bottom: 30px;">
+          <h3
+            style="font-size: 1.05rem; font-weight: 700; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 0.02em; color: var(--color-accent); display: flex; align-items: center; gap: 8px;">
+            <svg lucideLayers size="16"></svg>
+            <span>Quantity Milestone Tiers</span>
+          </h3>
+
+          <div *ngIf="slabs.length === 0" class="emptyState" style="padding: 20px 0;">
+            <p>No slabs configured for this scheme version.</p>
+            <button *ngIf="!isSchemeReadOnly" class="primaryBtn" (click)="onAddSlab()" style="margin-top: 10px;">Add
+              Initial Slab</button>
+          </div>
+
+          <div *ngIf="slabs.length > 0">
+            <div class="slabList">
+              <div *ngFor="let slab of slabs; let idx = index; let isLast = last" class="slabItem"
+                style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-bottom: 12px;">
+                <span class="slabLabel" style="min-width: 60px;">Tier {{ idx + 1 }}</span>
+
+
+                <div class="slabInputWrap" style="width: 100px;">
+                  <input class="slabInput"
+                    style="text-align: center; padding: 10px 12px 10px 40px; background: rgba(255,255,255,0.01); cursor: not-allowed;"
+                    type="text" [value]="slab.min_volume" disabled />
+                  <span class="slabUnit" style="right: auto; left: 10px;">Min</span>
+                </div>
+
+                <span style="color: var(--color-text-muted);">to</span>
+
+
+                <div *ngIf="isLast" class="slabUnlimitedBadge" style="width: 140px; padding: 10px 12px;">
+                  ∞ (Infinite)
+                </div>
+
+                <div *ngIf="!isLast" class="slabInputWrap" style="width: 120px;">
+                  <input class="slabInput" style="padding-right: 48px;" type="number" [min]="slab.min_volume"
+                    [(ngModel)]="slab.max_volume"
+                    (ngModelChange)="onUpdateSlab(idx, { max_volume: slab.max_volume })" />
+                  <span class="slabUnit">Cars</span>
+                </div>
+
+                <span style="color: var(--color-text-muted);">=</span>
+
+
+                <div class="slabInputWrap" style="width: 130px;">
+                  <input class="slabInput slabInputLeftSymbol" style="padding-left: 28px; padding-right: 48px;"
+                    type="number" min="0" [(ngModel)]="slab.payout_per_car" />
+                  <span class="slabUnitLeft" style="left: 10px;">₹</span>
+                  <span class="slabUnit">/ Car</span>
+                </div>
+
+
+                <div class="slabInputWrap" style="flex: 1; min-width: 140px;">
+                  <input class="slabInput" style="text-align: left; padding: 10px 12px;" type="text"
+                    placeholder="Tier Label Name" [(ngModel)]="slab.label" />
+                </div>
+
+
+                <button class="slabRemoveBtn" (click)="onRemoveSlab(idx)" [disabled]="slabs.length === 1"
+                  title="Remove Payout Slab">
+                  <svg lucideTrash2 size="16"></svg>
+                </button>
+              </div>
             </div>
 
-            
-            <div class="slabInputWrap" style="flex: 1; min-width: 140px;">
-              <input class="slabInput" style="text-align: left; padding: 10px 12px;" type="text" placeholder="Tier Label Name" [(ngModel)]="slab.label" />
+            <div class="slabWarnBanner" style="margin-top: 15px;">
+              <svg lucideAlertTriangle size="18" style="color: var(--color-warning); flex-shrink: 0;"></svg>
             </div>
- 
-            
-            <button class="slabRemoveBtn" (click)="onRemoveSlab(idx)" [disabled]="slabs.length === 1"
-              title="Remove Payout Slab">
-              <svg lucideTrash2 size="16"></svg>
-            </button>
+
+            <div style="display: flex; gap: 12px; justify-content: flex-start; margin-top: 20px;">
+              <button class="secondaryBtn" (click)="onAddSlab()">
+                <svg lucidePlus size="16"></svg>
+                <span>Add Next Tier</span>
+              </button>
+            </div>
           </div>
         </div>
 
-        <div class="slabWarnBanner">
-          <svg lucideAlertTriangle size="18" style="color: var(--color-warning); flex-shrink: 0;"></svg>
-          <span>
-            Our client-side safety guard ensures ranges cascade dynamically. Modifying the maximum limit of any slab
-            will automatically reposition adjacent limits so no overlapping values can be created.
-          </span>
+        <!-- Target Achievement Bonus Settings -->
+        <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 30px; margin-bottom: 30px;"
+          *ngIf="selectedScheme">
+          <h3
+            style="font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.02em; color: var(--color-accent); display: flex; align-items: center; gap: 8px;">
+            <svg lucideSparkles size="16" style="color: var(--toyota-red);"></svg>
+            <span>Target Achievement Bonus Settings</span>
+          </h3>
+          <p style="color: var(--color-text-secondary); font-size: 0.85rem; margin-bottom: 20px;">
+            Configure bonus multipliers unlocked when a Sales Officer reaches 100% of their assigned monthly target
+            volume.
+          </p>
+
+          <div
+            style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); border-radius: 6px; padding: 20px; display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-end;">
+            <div style="flex: 1; min-width: 200px;">
+              <label class="formLabel" style="font-size: 0.75rem;">Bonus Scheme Type</label>
+              <select class="formInput" [(ngModel)]="targetBonusType"
+                style="background-color: rgba(255, 255, 255, 0.02); color: var(--color-text-primary); border: 1px solid var(--border-color); border-radius: 4px; padding: 10px; width: 100%;">
+                <option value="NONE">No Bonus Tier</option>
+                <option value="FLAT">Flat Lump Sum (Unlocks on 100% Target)</option>
+                <option value="PER_CAR">Per-Car Payout Boost (Unlocks on 100% Target)</option>
+              </select>
+            </div>
+
+            <div style="flex: 1; min-width: 200px;" *ngIf="targetBonusType !== 'NONE'">
+              <label class="formLabel" style="font-size: 0.75rem;">
+                {{ targetBonusType === 'FLAT' ? 'Flat Reward Amount' : 'Commission Boost per Car' }}
+              </label>
+              <div class="slabInputWrap" style="width: 100%;">
+                <input class="slabInput slabInputLeftSymbol"
+                  style="padding-left: 24px; padding-top: 10px; padding-bottom: 10px; background-color: rgba(255,255,255,0.02);"
+                  type="number" min="0" [(ngModel)]="targetBonusAmount" />
+                <span class="slabUnitLeft" style="left: 8px; top: 10px;">₹</span>
+                <span class="slabUnit">{{ targetBonusType === 'FLAT' ? 'flat' : '/ car' }}</span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div style="display: flex; gap: 12px; justify-content: flex-start;">
-          <button class="primaryBtn" (click)="onSaveSlabs()" [disabled]="isSavingSlabs">
-            <svg *ngIf="isSavingSlabs" lucideRefreshCw class="animate-spin" size="16"></svg>
-            <svg *ngIf="!isSavingSlabs" lucideSave size="16"></svg>
-            <span>Save Configuration</span>
-          </button>
-          <button class="secondaryBtn" (click)="onAddSlab()">
-            <svg lucidePlus size="16"></svg>
-            <span>Add Next Tier</span>
-          </button>
+
+        <div>
+          <h3
+            style="font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.02em; color: var(--color-accent); display: flex; align-items: center; gap: 8px;">
+            <svg lucideCar size="16"></svg>
+            <span>Model-Level Commission Overrides</span>
+          </h3>
+          <p style="color: var(--color-text-secondary); font-size: 0.85rem; margin-bottom: 20px;">
+            Customize incentives for specific vehicle lines (e.g. Camry, Hilux).
+            <strong>Flat Overrides</strong> replace the slab rate entirely, while <strong>Bonus Overrides</strong> add a
+            payout boost on top of whatever slab tier is reached.
+          </p>
+
+
+          <div *ngIf="overrides.length === 0" class="emptyState"
+            style="padding: 20px 0; background: rgba(255, 255, 255, 0.01); border: 1px dashed var(--border-color); border-radius: 6px; margin-bottom: 20px;">
+            <p>No model overrides configured for this scheme.</p>
+          </div>
+
+          <div *ngIf="overrides.length > 0" class="tableContainer"
+            style="margin-bottom: 25px; background: rgba(0, 0, 0, 0.1); border-radius: 6px; padding: 10px;">
+            <table class="table" style="box-shadow: none; background: transparent;">
+              <thead>
+                <tr>
+                  <th>Vehicle Model Specification</th>
+                  <th>Override Type</th>
+                  <th>Value / Commission Amount</th>
+                  <th *ngIf="!isSchemeReadOnly" style="text-align: right; width: 80px;">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let o of overrides; let oIdx = index">
+                  <td style="font-weight: 600;">{{ getCarLabel(o.car_id) }}</td>
+                  <td>
+                    <span class="statusBadge"
+                      [style.background]="o.override_type === 'FLAT' ? 'rgba(16, 185, 129, 0.12)' : 'rgba(59, 130, 246, 0.12)'"
+                      [style.color]="o.override_type === 'FLAT' ? '#10b981' : '#3b82f6'">
+                      {{ o.override_type === 'FLAT' ? 'FLAT RATE' : 'BONUS BOOST' }}
+                    </span>
+                  </td>
+                  <td style="font-weight: 700; color: var(--toyota-red);">
+                    {{ formatRupee(o.amount) }}{{ o.override_type === 'BONUS' ? ' extra' : ' / car' }}
+                  </td>
+                  <td *ngIf="!isSchemeReadOnly" style="text-align: right;">
+                    <button class="slabRemoveBtn" style="padding: 6px; margin: 0;" (click)="onRemoveOverride(oIdx)"
+                      title="Remove Override">
+                      <svg lucideTrash2 size="14"></svg>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+
+          <div *ngIf="!isSchemeReadOnly"
+            style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); border-radius: 6px; padding: 20px; margin-bottom: 25px;">
+            <h4
+              style="font-size: 0.9rem; font-weight: 700; margin-bottom: 12px; text-transform: uppercase; color: var(--color-text-secondary);">
+              Configure Separate Model Payout</h4>
+
+            <div style="display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end;">
+              <div style="flex: 2; min-width: 200px;">
+                <label class="formLabel" style="font-size: 0.75rem;">Select Eligible Car</label>
+                <select class="formInput" [(ngModel)]="newOverrideCarId"
+                  style="background-color: rgba(0, 0, 0, 0.2); color: var(--color-text-primary); border: 1px solid var(--border-color); border-radius: 4px; padding: 10px; width: 100%;">
+                  <option value="">-- Select Active Vehicle Model --</option>
+                  <option *ngFor="let c of eligibleOverrideCars" [value]="c.id">
+                    {{ c.model_name }} {{ c.base_suffix }} ({{ c.variant }})
+                  </option>
+                </select>
+              </div>
+
+              <div style="flex: 1; min-width: 140px;">
+                <label class="formLabel" style="font-size: 0.75rem;">Override Scheme</label>
+                <select class="formInput" [(ngModel)]="newOverrideType"
+                  style="background-color: rgba(0, 0, 0, 0.2); color: var(--color-text-primary); border: 1px solid var(--border-color); border-radius: 4px; padding: 10px; width: 100%;">
+                  <option value="FLAT">Flat Rate / Car</option>
+                  <option value="BONUS">Bonus on top of Slab</option>
+                </select>
+              </div>
+
+              <div style="flex: 1; min-width: 120px;">
+                <label class="formLabel" style="font-size: 0.75rem;">Commission Amount</label>
+                <div class="slabInputWrap" style="width: 100%;">
+                  <input class="slabInput slabInputLeftSymbol"
+                    style="padding-left: 24px; padding-top: 10px; padding-bottom: 10px; background-color: rgba(0,0,0,0.2);"
+                    type="number" min="0" [(ngModel)]="newOverrideAmount" />
+                  <span class="slabUnitLeft" style="left: 8px; top: 10px;">₹</span>
+                </div>
+              </div>
+
+              <button class="secondaryBtn" style="padding: 10px 20px; font-weight: 700; height: 42px;"
+                [disabled]="!newOverrideCarId" (click)="onAddOverride()">
+                <svg lucidePlus size="16"></svg>
+                <span>Add Override</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Single Unified Publish Button for All Configurations -->
+          <div style="display: flex; gap: 12px; justify-content: flex-start; margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 24px;">
+            <button class="primaryBtn" (click)="onPublishSchemeSettings()" [disabled]="isSavingSlabs"
+              style="background: linear-gradient(135deg, var(--toyota-red) 0%, #eb0a1e 100%); padding: 12px 28px; font-size: 1rem; font-weight: 700; box-shadow: 0 4px 15px rgba(235, 10, 30, 0.2);">
+              <svg *ngIf="isSavingSlabs" lucideRefreshCw class="animate-spin" size="18"></svg>
+              <svg *ngIf="!isSavingSlabs" lucideSave size="18"></svg>
+              <span>{{ isSchemeReadOnly ? 'Publish as New Active Version' : 'Publish Scheme & Save All Configurations' }}</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
 
-    
+
     <div *ngIf="activeTab === 'dashboard'" class="panel glass-panel">
-      
+
       <div class="analytics-header">
         <div class="analytics-title">
           <h2 style="font-size: 1.25rem; margin-bottom: 6px;">Dealership Performance Analytics</h2>
@@ -229,35 +455,39 @@
         </div>
 
         <div class="analytics-actions">
-          
+
           <div class="analytics-picker-group">
             <label for="analMonth" class="analytics-label">Billing Period</label>
-            <input type="month" id="analMonth" class="analytics-picker" [ngModel]="analyticsMonth" (ngModelChange)="onMonthChange($event)" />
+            <input type="month" id="analMonth" class="analytics-picker" [ngModel]="analyticsMonth"
+              (ngModelChange)="onMonthChange($event)" />
           </div>
 
-          
-          <button class="simulationBtn" (click)="onGenerateMockData()" [disabled]="isGeneratingMock" title="Generate Mock Sales Data">
+
+          <button class="simulationBtn" (click)="onGenerateMockData()" [disabled]="isGeneratingMock"
+            title="Generate Mock Sales Data">
             <svg *ngIf="isGeneratingMock" lucideRefreshCw class="animate-spin" size="15"></svg>
             <svg *ngIf="!isGeneratingMock" lucideSparkles size="15"></svg>
             <span>{{ isGeneratingMock ? 'Generating...' : 'Simulate Demo Sales' }}</span>
           </button>
 
-          
-          <button class="exportBtn" (click)="exportAnalyticsToCSV()" [disabled]="isLoadingStats || !stats" title="Export Performance CSV">
+
+          <button class="exportBtn" (click)="exportAnalyticsToCSV()" [disabled]="isLoadingStats || !stats"
+            title="Export Performance CSV">
             <svg lucideDownload size="15"></svg>
             <span>Export CSV</span>
           </button>
         </div>
       </div>
 
-      
+
       <div *ngIf="isLoadingStats" class="emptyState" style="padding: 60px 0;">
-        <svg lucideRefreshCw class="animate-spin" size="28" style="margin: 0 auto 10px; display: block; color: var(--toyota-red);"></svg>
+        <svg lucideRefreshCw class="animate-spin" size="28"
+          style="margin: 0 auto 10px; display: block; color: var(--toyota-red);"></svg>
         <p style="font-weight: 500;">Aggregating monthly sales records and computing incentives...</p>
       </div>
 
       <div *ngIf="!isLoadingStats && stats">
-        
+
         <div class="metrics-grid">
           <div class="metric-card">
             <div class="metric-icon blue">
@@ -320,30 +550,32 @@
           </div>
         </div>
 
-        
+
         <div class="analysis-bulletin">
           <div class="bulletin-item">
             <span class="bulletin-badge top-officer">⭐ TOP PERFORMER</span>
             <span class="bulletin-info">
-              <strong>{{ stats.topOfficerName }}</strong> cleared <strong>{{ stats.topOfficerVolume }} vehicles</strong> this month!
+              <strong>{{ stats.topOfficerName }}</strong> cleared <strong>{{ stats.topOfficerVolume }} vehicles</strong>
+              this month!
             </span>
           </div>
           <div class="bulletin-item">
             <span class="bulletin-badge top-car">📈 HOT MODEL</span>
             <span class="bulletin-info">
-              <strong>{{ stats.topCarModel }}</strong> is the dealer leader with <strong>{{ stats.topCarVolume }} deliveries</strong>.
+              <strong>{{ stats.topCarModel }}</strong> is the dealer leader with <strong>{{ stats.topCarVolume }}
+                deliveries</strong>.
             </span>
           </div>
         </div>
 
-        
+
         <div class="split-analytics-grid">
-          
+
           <div class="grid-col glass-card">
             <div class="grid-col-header">
               <h3>Sales Officer Payout Leaderboard</h3>
-              
-              
+
+
               <div class="leaderboard-search">
                 <svg lucideSearch size="14" class="search-icon"></svg>
                 <input type="text" placeholder="Search by name..." [(ngModel)]="searchQuery" class="search-input" />
@@ -368,7 +600,8 @@
                   <tr *ngFor="let officer of filteredLeaderboard; let idx = index">
                     <td>
                       <div class="officer-identity">
-                        <span class="rank-badge" [class.gold-rank]="idx === 0" [class.silver-rank]="idx === 1">{{ idx + 1 }}</span>
+                        <span class="rank-badge" [class.gold-rank]="idx === 0" [class.silver-rank]="idx === 1">{{ idx +
+                          1 }}</span>
                         <div class="officer-detail">
                           <span class="officer-name">{{ officer.name }}</span>
                           <span class="officer-sub">@{{ officer.username }}</span>
@@ -379,13 +612,11 @@
                       <span class="count-pill">{{ officer.totalVolume }}</span>
                     </td>
                     <td>
-                      <span class="slab-badge" 
-                        [class.slab-bronze]="officer.activeTierLabel.includes('Bronze')"
+                      <span class="slab-badge" [class.slab-bronze]="officer.activeTierLabel.includes('Bronze')"
                         [class.slab-silver]="officer.activeTierLabel.includes('Silver')"
                         [class.slab-gold]="officer.activeTierLabel.includes('Gold')"
                         [class.slab-platinum]="officer.activeTierLabel.includes('Platinum')"
-                        [class.slab-diamond]="officer.activeTierLabel.includes('Diamond')"
-                      >
+                        [class.slab-diamond]="officer.activeTierLabel.includes('Diamond')">
                         {{ officer.activeTierLabel }}
                       </span>
                     </td>
@@ -398,7 +629,7 @@
             </div>
           </div>
 
-          
+
           <div class="grid-col glass-card">
             <div class="grid-col-header">
               <h3>Model Sales Volume Share</h3>
@@ -421,7 +652,7 @@
                   </div>
                 </div>
 
-                
+
                 <div class="share-bar-container">
                   <div class="share-bar-fill" [style.width.%]="car.percentage"></div>
                 </div>
@@ -431,9 +662,396 @@
         </div>
       </div>
     </div>
+
+    <!-- Officers Management Panel -->
+    <div *ngIf="activeTab === 'officers'" class="panel glass-panel">
+      <div
+        style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px;">
+        <div>
+          <h2 style="font-size: 1.25rem; margin-bottom: 6px;">Sales Officers Directory</h2>
+          <p style="color: var(--color-text-secondary); font-size: 0.88rem;">
+            Manage employee HR records, set monthly sales targets, and audit active status.
+          </p>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div class="analytics-picker-group"
+            style="margin: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 4px;">
+            <label class="analytics-label"
+              style="font-size: 0.65rem; text-transform: uppercase; margin: 0; font-weight: 700; color: var(--color-accent);">Billing
+              Target Period</label>
+            <input type="month" class="analytics-picker" style="height: 38px;" [ngModel]="analyticsMonth"
+              (ngModelChange)="onMonthChange($event)" />
+          </div>
+          <button class="primaryBtn" style="padding: 8px 16px; font-size: 0.85rem; height: 38px; margin-top: auto;"
+            (click)="openAddOfficerModal()">
+            <svg lucidePlus size="16"></svg>
+            <span>Register Officer</span>
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="isLoadingOfficers" class="emptyState" style="padding: 40px 0;">
+        <svg lucideRefreshCw class="animate-spin" size="24" style="margin: 0 auto 10px; display: block;"></svg>
+        <p>Loading Sales Officer directory...</p>
+      </div>
+
+      <div *ngIf="!isLoadingOfficers && officers.length === 0" class="emptyState">
+        <svg lucideUsers size="40" class="emptyIcon" style="margin-bottom: 12px; display: block;"></svg>
+        <p>No sales officers registered. Click 'Register Officer' to set up profiles.</p>
+      </div>
+
+      <div *ngIf="!isLoadingOfficers && officers.length > 0">
+        <div class="tableContainer">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Sales Officer Details</th>
+                <th>Employee ID</th>
+                <th>Designation & Branch</th>
+                <th style="width: 120px; text-align: center;">Status</th>
+                <th style="text-align: center; width: 140px;">Current Target</th>
+                <th style="text-align: left; min-width: 240px;">Performance Snapshot ({{ analyticsMonth }})</th>
+                <th style="text-align: right; width: 100px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let officer of officers">
+                <td>
+                  <div style="display: flex; align-items: center; gap: 12px;">
+                    <div class="avatar"
+                      style="width: 32px; height: 32px; font-size: 0.8rem; background: var(--color-accent); display: flex; align-items: center; justify-content: center; color: white; border-radius: 50%;">
+                      {{ getInitials(officer.name) }}
+                    </div>
+                    <div style="display: flex; flex-direction: column;">
+                      <span style="font-weight: 700; color: var(--color-text-primary);">{{ officer.name }}</span>
+                      <span style="font-size: 0.78rem; color: var(--color-text-muted);">@{{ officer.username }}</span>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span
+                    style="font-family: var(--font-mono); font-size: 0.85rem; font-weight: 600; padding: 2px 6px; background: rgba(0,0,0,0.03); border: 1px solid var(--border-color); border-radius: 4px;">
+                    {{ officer.employee_id || 'TKM-Pending' }}
+                  </span>
+                </td>
+                <td>
+                  <div style="display: flex; flex-direction: column;">
+                    <span style="font-size: 0.88rem; font-weight: 500;">{{ officer.designation || 'Sales Officer'
+                      }}</span>
+                    <span style="font-size: 0.75rem; color: var(--color-text-muted);">Branch: {{ officer.branch_code ||
+                      'N/A' }} | Manager: {{ officer.reporting_manager || 'None' }}</span>
+                  </div>
+                </td>
+                <td style="text-align: center;">
+                  <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                      <input type="checkbox" [checked]="officer.active"
+                        (change)="onToggleOfficerStatusTrigger(officer, !officer.active)"
+                        style="cursor: pointer; width: 16px; height: 16px; accent-color: var(--color-success);" />
+                      <span class="statusBadge" [class.statusActive]="officer.active"
+                        [class.statusInactive]="!officer.active" style="padding: 2px 6px; font-size: 0.7rem;">
+                        {{ officer.active ? 'Active' : 'Inactive' }}
+                      </span>
+                    </div>
+                    <span *ngIf="!officer.active && officer.deactivation_reason"
+                      style="font-size: 0.72rem; color: var(--color-error); font-style: italic; max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                      [title]="officer.deactivation_reason">
+                      ({{ officer.deactivation_reason }})
+                    </span>
+                  </div>
+                </td>
+                <td style="text-align: center;">
+                  <div style="display: flex; align-items: center; gap: 6px; justify-content: center;">
+                    <input #targetInput type="number" min="0" [value]="officer.snapshot?.targetVolume || 0"
+                      style="width: 60px; padding: 6px; text-align: center; border: 1px solid var(--border-color); border-radius: 4px; background: rgba(255,255,255,0.05); font-weight: 700;" />
+                    <button class="actionBtn" style="padding: 6px;"
+                      (click)="onSaveOfficerTarget(officer, targetInput.value)" title="Assign Target">
+                      <svg lucideSave size="14"></svg>
+                    </button>
+                  </div>
+                </td>
+                <td>
+                  <div *ngIf="officer.snapshot" style="display: flex; flex-direction: column; gap: 4px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 2px;">
+                      <span>
+                        Sold: <strong>{{ officer.snapshot.carsSold }}</strong>
+                        <span style="color: var(--color-text-muted);">/ {{ officer.snapshot.targetVolume || '0' }}
+                          units</span>
+                      </span>
+                      <span style="font-weight: 700; color: var(--toyota-red);">
+                        {{ formatRupee(officer.snapshot.incentiveEarned) }}
+                      </span>
+                    </div>
+
+                    <!-- Progress Meter -->
+                    <div
+                      style="width: 100%; height: 6px; background: rgba(0,0,0,0.06); border-radius: 3px; overflow: hidden; position: relative;">
+                      <div
+                        [style.width.%]="officer.snapshot.targetVolume > 0 ? (officer.snapshot.targetProgressPct > 100 ? 100 : officer.snapshot.targetProgressPct) : 0"
+                        [style.background]="officer.snapshot.targetProgressPct >= 100 ? '#10b981' : 'var(--toyota-red)'"
+                        style="height: 100%; border-radius: 3px; transition: width 0.3s ease;">
+                      </div>
+                    </div>
+                    <div
+                      style="display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem;">
+                      <span style="color: var(--color-text-muted);">
+                        Achievement:
+                        <strong
+                          [style.color]="officer.snapshot.targetVolume > 0 && officer.snapshot.targetProgressPct >= 100 ? '#10b981' : ''">
+                          {{ officer.snapshot.targetVolume > 0 ? formatPercentage(officer.snapshot.targetProgressPct) :
+                          'N/A (Unassigned)' }}
+                        </strong>
+                      </span>
+                      <span *ngIf="officer.snapshot.targetVolume > 0 && officer.snapshot.targetBonusUnlocked"
+                        style="color: #10b981; font-weight: 700; display: inline-flex; align-items: center; gap: 2px;">
+                        <svg lucideSparkles size="10"></svg>
+                        <span>Bonus Unlocked!</span>
+                      </span>
+                    </div>
+                  </div>
+                  <div *ngIf="!officer.snapshot" style="font-size: 0.8rem; color: var(--color-text-muted);">
+                    No dynamic snapshot available.
+                  </div>
+                </td>
+                <td style="text-align: right;">
+                  <div class="actionGroup" style="justify-content: flex-end;">
+                    <button class="actionBtn" (click)="openEditOfficerModal(officer)" title="Edit HR Profile">
+                      <svg lucideEdit2 size="15"></svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reports & Audits Panel -->
+    <div *ngIf="activeTab === 'reports'" class="panel glass-panel">
+      <div
+        style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px;">
+        <div>
+          <h2 style="font-size: 1.25rem; margin-bottom: 6px;">Payroll Reports & Financial Audits</h2>
+          <p style="color: var(--color-text-secondary); font-size: 0.88rem;">
+            Generate enterprise CSV payroll logs, audit slab adjustment trails, and review YTD cumulative targets.
+          </p>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div class="analytics-picker-group"
+            style="margin: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 4px;">
+            <label class="analytics-label"
+              style="font-size: 0.65rem; text-transform: uppercase; margin: 0; font-weight: 700; color: var(--color-accent);">Audit
+              Calendar Year</label>
+            <select class="analytics-picker"
+              style="height: 38px; min-width: 120px; background: rgba(0, 0, 0, 0.2); color: var(--color-text-primary); border: 1px solid var(--border-color); border-radius: 4px; padding: 6px 12px;"
+              [ngModel]="reportsYear" (ngModelChange)="onReportsYearChange($event)">
+              <option value="2026">2026 FY</option>
+              <option value="2025">2025 FY</option>
+              <option value="2024">2024 FY</option>
+            </select>
+          </div>
+          <button class="exportBtn"
+            style="height: 38px; margin-top: auto; background: rgba(16, 185, 129, 0.08); color: #047857; border: 1px solid rgba(16, 185, 129, 0.25);"
+            (click)="exportYTDToCSV()" title="Export Cumulative YTD Summary CSV">
+            <svg lucideDownload size="16"></svg>
+            <span>Export YTD CSV</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Sub-Tabs navigation -->
+      <div style="display: flex; flex-direction: column; gap: 30px;">
+
+        <!-- SECTION 1: Monthly Incentive Report -->
+        <div
+          style="background: rgba(255, 255, 255, 0.01); border: 1px solid var(--border-color); border-radius: 8px; padding: 24px;">
+          <div
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+            <div>
+              <h3
+                style="font-size: 1.05rem; font-weight: 700; color: var(--color-accent); display: flex; align-items: center; gap: 8px; margin: 0;">
+                <svg lucideAward size="18" style="color: var(--toyota-red);"></svg>
+                <span>Monthly Incentive Payroll Report — {{ analyticsMonth }}</span>
+              </h3>
+              <p style="color: var(--color-text-secondary); font-size: 0.8rem; margin: 4px 0 0 0;">
+                Active payroll calculation table summarizing volume, slab milestone matches, and target achievement
+                coefficients.
+              </p>
+            </div>
+            <button class="exportBtn" style="height: 34px; font-size: 0.8rem; padding: 0 12px;"
+              (click)="exportAnalyticsToCSV()">
+              <svg lucideDownload size="14"></svg>
+              <span>Export Payroll CSV</span>
+            </button>
+          </div>
+
+          <div *ngIf="isLoadingStats" class="emptyState" style="padding: 20px 0;">
+            <svg lucideRefreshCw class="animate-spin" size="20" style="margin: 0 auto 8px; display: block;"></svg>
+            <p>Loading monthly records...</p>
+          </div>
+
+          <div *ngIf="!isLoadingStats && (!stats || filteredLeaderboard.length === 0)" class="emptyState"
+            style="padding: 20px 0;">
+            <p>No active performance data to report for {{ analyticsMonth }}.</p>
+          </div>
+
+          <div *ngIf="!isLoadingStats && stats && filteredLeaderboard.length > 0" class="tableContainer">
+            <table class="table" style="background: transparent; box-shadow: none;">
+              <thead>
+                <tr>
+                  <th>Sales Officer</th>
+                  <th style="text-align: center;">Total Cars Sold</th>
+                  <th>Slab Achieved</th>
+                  <th style="text-align: right;">Incentive Rate</th>
+                  <th style="text-align: center;">Target Achievement</th>
+                  <th style="text-align: right;">Total Payout</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let off of filteredLeaderboard">
+                  <td style="font-weight: 600;">
+                    {{ off.name }} <span
+                      style="font-size: 0.78rem; color: var(--color-text-muted); font-weight: 400; margin-left: 4px;">@{{
+                      off.username }}</span>
+                  </td>
+                  <td style="text-align: center; font-weight: 700;">
+                    <span class="count-pill">{{ off.totalVolume }} units</span>
+                  </td>
+                  <td>
+                    <span class="slab-badge" [class.slab-bronze]="off.activeTierLabel.includes('Bronze')"
+                      [class.slab-silver]="off.activeTierLabel.includes('Silver')"
+                      [class.slab-gold]="off.activeTierLabel.includes('Gold')"
+                      [class.slab-platinum]="off.activeTierLabel.includes('Platinum')">
+                      {{ off.activeTierLabel }}
+                    </span>
+                  </td>
+                  <td style="text-align: right; font-weight: 700; font-family: var(--font-mono);">
+                    {{ formatRupee(off.rate || 0) }} / car
+                  </td>
+                  <td style="text-align: center;">
+                    <span [style.color]="off.targetVolume > 0 && off.percentageAchieved >= 100 ? '#10b981' : ''"
+                      style="font-weight: 700;">
+                      {{ off.targetVolume > 0 ? off.percentageAchieved + '%' : 'N/A' }}
+                    </span>
+                    <span style="font-size: 0.72rem; color: var(--color-text-muted); margin-left: 4px;">
+                      (Target: {{ off.targetVolume || 0 }})
+                    </span>
+                  </td>
+                  <td
+                    style="text-align: right; font-weight: 700; color: var(--toyota-red); font-family: var(--font-mono);">
+                    {{ formatRupee(off.totalPayout) }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <!-- SECTION 2: Slab Change Audit Log -->
+          <div
+            style="background: rgba(255, 255, 255, 0.01); border: 1px solid var(--border-color); border-radius: 8px; padding: 24px; text-align: left;">
+            <h3
+              style="font-size: 1.05rem; font-weight: 700; color: var(--color-accent); display: flex; align-items: center; gap: 8px; margin-bottom: 8px; margin-top: 0;">
+              <svg lucideAlertTriangle size="18" style="color: #f59e0b;"></svg>
+              <span>Slab Change Audit Trail</span>
+            </h3>
+            <p style="color: var(--color-text-secondary); font-size: 0.8rem; margin-bottom: 16px;">
+              Compliance timeline logging slab adjustments, parameter changes, and admin authorization audits.
+            </p>
+
+            <div *ngIf="isLoadingReports" class="emptyState" style="padding: 20px 0;">
+              <svg lucideRefreshCw class="animate-spin" size="20" style="margin: 0 auto 8px; display: block;"></svg>
+              <p>Loading historical audit logs...</p>
+            </div>
+
+            <div *ngIf="!isLoadingReports && (!reportsData || reportsData.auditLogs.length === 0)" class="emptyState"
+              style="padding: 20px 0;">
+              <p>No system modifications registered in the audit registry.</p>
+            </div>
+
+            <div *ngIf="!isLoadingReports && reportsData && reportsData.auditLogs.length > 0"
+              style="max-height: 350px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; background: rgba(0,0,0,0.1);">
+              <div *ngFor="let audit of reportsData.auditLogs"
+                style="border-bottom: 1px solid var(--border-color); padding: 12px 6px; font-size: 0.85rem; display: flex; flex-direction: column; gap: 6px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-weight: 700; color: var(--color-accent);">{{ audit.action }}</span>
+                  <span style="font-size: 0.72rem; color: var(--color-text-muted); font-family: var(--font-mono);">
+                    {{ audit.timestamp | date:'dd MMM yyyy, h:mm a' }}
+                  </span>
+                </div>
+                <p style="margin: 0; color: var(--color-text-primary); white-space: pre-line; line-height: 1.4;">{{
+                  audit.details }}</p>
+                <div style="font-size: 0.72rem; color: var(--color-text-muted); text-align: right;">
+                  Authorized by: <strong style="color: var(--color-text-secondary);">@{{ audit.adminUsername }}</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SECTION 3: Year-to-Date Summary -->
+          <div
+            style="background: rgba(255, 255, 255, 0.01); border: 1px solid var(--border-color); border-radius: 8px; padding: 24px; text-align: left;">
+            <h3
+              style="font-size: 1.05rem; font-weight: 700; color: var(--color-accent); display: flex; align-items: center; gap: 8px; margin-bottom: 8px; margin-top: 0;">
+              <svg lucideTrendingUp size="18" style="color: #10b981;"></svg>
+              <span>Year-to-Date (YTD) Performance Summary</span>
+            </h3>
+            <p style="color: var(--color-text-secondary); font-size: 0.8rem; margin-bottom: 16px;">
+              Cumulative financial summary aggregating incentive earnings and volumes for the {{ reportsYear }} fiscal
+              year.
+            </p>
+
+            <div *ngIf="isLoadingReports" class="emptyState" style="padding: 20px 0;">
+              <svg lucideRefreshCw class="animate-spin" size="20" style="margin: 0 auto 8px; display: block;"></svg>
+              <p>Aggregating YTD historical performance...</p>
+            </div>
+
+            <div *ngIf="!isLoadingReports && (!reportsData || reportsData.ytdSummary.length === 0)" class="emptyState"
+              style="padding: 20px 0;">
+              <p>No YTD performance summaries recorded for the year {{ reportsYear }}.</p>
+            </div>
+
+            <div *ngIf="!isLoadingReports && reportsData && reportsData.ytdSummary.length > 0" class="tableContainer">
+              <table class="table" style="background: transparent; box-shadow: none;">
+                <thead>
+                  <tr>
+                    <th>Sales Officer</th>
+                    <th style="text-align: center;">YTD Volume Sold</th>
+                    <th style="text-align: right;">YTD Total Payout</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of reportsData.ytdSummary">
+                    <td style="font-weight: 600;">
+                      {{ row.name }} <span
+                        style="font-size: 0.72rem; color: var(--color-text-muted); font-weight: 400; display: block;">@{{
+                        row.username }}</span>
+                    </td>
+                    <td style="text-align: center; font-weight: 700;">
+                      <span class="count-pill" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+                        {{ row.ytdVolume }} cars
+                      </span>
+                    </td>
+                    <td
+                      style="text-align: right; font-weight: 700; color: var(--toyota-red); font-family: var(--font-mono);">
+                      {{ formatRupee(row.ytdPayout) }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
   </main>
 
-  
+
   <div *ngIf="isCarModalOpen" class="modalOverlay">
     <div class="modal glass-panel">
       <div class="modalHeader">
@@ -468,6 +1086,36 @@
             placeholder="e.g. ₹11.69L or ₹16.73L" [(ngModel)]="exShowroomPrice" />
         </div>
 
+        <div class="formGroup">
+          <label class="formLabel" for="segment">Market Segment Taxonomy</label>
+          <select class="formInput" id="segment" name="segment" [(ngModel)]="segment" required
+            style="background-color: rgba(255, 255, 255, 0.02); color: var(--color-text-primary); border: 1px solid var(--border-color); border-radius: 4px; padding: 10px; width: 100%;">
+            <option value="SUV">SUV</option>
+            <option value="MUV">MUV</option>
+            <option value="Sedan">Sedan</option>
+            <option value="Hatchback">Hatchback</option>
+            <option value="Pickup">Pickup</option>
+          </select>
+        </div>
+
+        <div class="formGroup">
+          <label class="formLabel" for="launchStatus">Model Launch Status</label>
+          <select class="formInput" id="launchStatus" name="launchStatus" [(ngModel)]="launchStatus" required
+            style="background-color: rgba(255, 255, 255, 0.02); color: var(--color-text-primary); border: 1px solid var(--border-color); border-radius: 4px; padding: 10px; width: 100%;">
+            <option value="ACTIVE">ACTIVE</option>
+            <option value="DISCONTINUED">DISCONTINUED</option>
+            <option value="UPCOMING">UPCOMING</option>
+          </select>
+        </div>
+
+        <div class="switchGroup" style="margin-bottom: 20px;">
+          <input class="switchInput" type="checkbox" id="eligibleForIncentive" name="eligibleForIncentive"
+            [(ngModel)]="eligibleForIncentive" />
+          <label class="switchLabel" for="eligibleForIncentive">
+            Eligible for Incentive Commission Slabs
+          </label>
+        </div>
+
         <div *ngIf="editingCar" class="switchGroup">
           <input class="switchInput" type="checkbox" id="isActive" name="isActive" [(ngModel)]="isActive" />
           <label class="switchLabel" for="isActive">
@@ -479,6 +1127,186 @@
           <button class="secondaryBtn" type="button" (click)="isCarModalOpen = false">Cancel</button>
           <button class="primaryBtn" type="submit">
             <span>{{ editingCar ? 'Update Model' : 'Register Vehicle' }}</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <div *ngIf="isSchemeModalOpen" class="modalOverlay">
+    <div class="modal glass-panel" style="max-width: 500px;">
+      <div class="modalHeader">
+        <h2>Create Slab Scheme Version</h2>
+        <button class="closeBtn" (click)="isSchemeModalOpen = false">
+          <svg lucideX size="20"></svg>
+        </button>
+      </div>
+
+      <form (ngSubmit)="onSaveScheme()">
+        <div class="formGroup">
+          <label class="formLabel" for="schemeName">Version Scheme Name</label>
+          <input class="formInput" type="text" id="schemeName" name="schemeName"
+            placeholder="e.g. Q2 FY2026 Scheme, Q3 FY2026 Promo" [(ngModel)]="newSchemeName" required />
+        </div>
+
+        <div class="formGroup">
+          <label class="formLabel" for="schemeDate">Scheme Activation Date</label>
+          <input class="formInput" type="date" id="schemeDate" name="schemeDate" [(ngModel)]="newSchemeActivationDate"
+            required
+            style="background-color: rgba(255, 255, 255, 0.02); color: var(--color-text-primary); border: 1px solid var(--border-color); border-radius: 4px; padding: 10px; width: 100%;" />
+        </div>
+
+        <div class="formGroup">
+          <label class="formLabel" for="schemeClone">Clone Configuration Template</label>
+          <select class="formInput" id="schemeClone" name="schemeClone" [(ngModel)]="newSchemeCloneFromId"
+            style="background-color: rgba(255, 255, 255, 0.02); color: var(--color-text-primary); border: 1px solid var(--border-color); border-radius: 4px; padding: 10px; width: 100%;">
+            <option value="">-- Create Empty Scheme --</option>
+            <option *ngFor="let s of schemes" [value]="s.id">
+              Clone from: {{ s.name }} (Starts {{ s.activation_date }})
+            </option>
+          </select>
+          <p style="font-size: 0.72rem; color: var(--color-text-secondary); margin-top: 4px;">
+            Cloning will copy all slabs and overrides definitions directly into the new version to save configuration
+            time.
+          </p>
+        </div>
+
+        <div class="btnGroup">
+          <button class="secondaryBtn" type="button" (click)="isSchemeModalOpen = false">Cancel</button>
+          <button class="primaryBtn" type="submit" [disabled]="!newSchemeName.trim() || !newSchemeActivationDate">
+            <span>Create Version</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Register/Edit Officer Modal -->
+  <div *ngIf="isOfficerModalOpen" class="modalOverlay">
+    <div class="modal glass-panel" style="max-width: 600px; max-height: 90vh; overflow-y: auto;">
+      <div class="modalHeader">
+        <h2>{{ editingOfficer ? 'Edit Profile: ' + officerName : 'Register Sales Officer' }}</h2>
+        <button class="closeBtn" (click)="isOfficerModalOpen = false">
+          <svg lucideX size="20"></svg>
+        </button>
+      </div>
+
+      <form (ngSubmit)="onSaveOfficer()">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+          <div class="formGroup">
+            <label class="formLabel" for="offUsername">Username (Sign In)</label>
+            <input class="formInput" type="text" id="offUsername" name="offUsername" placeholder="e.g. jdoe"
+              [(ngModel)]="officerUsername" [disabled]="editingOfficer !== null" required />
+          </div>
+
+          <div class="formGroup">
+            <label class="formLabel" for="offPassword">
+              {{ editingOfficer ? 'Reset Password (Optional)' : 'Password (Sign In)' }}
+            </label>
+            <input class="formInput" type="password" id="offPassword" name="offPassword" placeholder="••••••••"
+              [(ngModel)]="officerPassword" [required]="!editingOfficer" />
+          </div>
+
+          <div class="formGroup">
+            <label class="formLabel" for="offName">Full Name</label>
+            <input class="formInput" type="text" id="offName" name="offName" placeholder="e.g. John Doe"
+              [(ngModel)]="officerName" required />
+          </div>
+
+          <div class="formGroup">
+            <label class="formLabel" for="offEmail">Email Address</label>
+            <input class="formInput" type="email" id="offEmail" name="offEmail" placeholder="e.g. john@toyota.in"
+              [(ngModel)]="officerEmail" />
+          </div>
+
+          <div class="formGroup">
+            <label class="formLabel" for="offEmpId">Employee ID</label>
+            <input class="formInput" type="text" id="offEmpId" name="offEmpId" placeholder="e.g. TKM-2026-001"
+              [(ngModel)]="officerEmployeeId" required />
+            <p style="font-size: 0.72rem; color: var(--color-text-secondary); margin-top: 4px;">
+              Must match Toyota HR standard: TKM-YYYY-XXX
+            </p>
+          </div>
+
+          <div class="formGroup">
+            <label class="formLabel" for="offBranch">Branch / Dealership Code</label>
+            <input class="formInput" type="text" id="offBranch" name="offBranch" placeholder="e.g. BR-01"
+              [(ngModel)]="officerBranchCode" required />
+          </div>
+
+          <div class="formGroup">
+            <label class="formLabel" for="offManager">Reporting Manager</label>
+            <input class="formInput" type="text" id="offManager" name="offManager" placeholder="e.g. Rajesh Kumar"
+              [(ngModel)]="officerReportingManager" />
+          </div>
+
+          <div class="formGroup">
+            <label class="formLabel" for="offDoj">Date of Joining</label>
+            <input class="formInput" type="date" id="offDoj" name="offDoj" [(ngModel)]="officerDateOfJoining" required
+              style="background-color: rgba(255, 255, 255, 0.02); color: var(--color-text-primary); border: 1px solid var(--border-color); border-radius: 4px; padding: 10px; width: 100%;" />
+          </div>
+
+          <div class="formGroup">
+            <label class="formLabel" for="offDesignation">Current Designation</label>
+            <input class="formInput" type="text" id="offDesignation" name="offDesignation"
+              placeholder="e.g. Sales Executive" [(ngModel)]="officerDesignation" required />
+          </div>
+
+          <div class="formGroup">
+            <label class="formLabel" for="offContact">Contact Number</label>
+            <input class="formInput" type="text" id="offContact" name="offContact" placeholder="e.g. +91 9876543210"
+              [(ngModel)]="officerContactNumber" />
+          </div>
+        </div>
+
+        <div class="btnGroup">
+          <button class="secondaryBtn" type="button" (click)="isOfficerModalOpen = false">Cancel</button>
+          <button class="primaryBtn" type="submit" [disabled]="!officerUsername.trim() || !officerName.trim()">
+            <span>{{ editingOfficer ? 'Save Changes' : 'Register Officer' }}</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Deactivation Reason Modal -->
+  <div *ngIf="isStatusReasonModalOpen" class="modalOverlay">
+    <div class="modal glass-panel" style="max-width: 450px;">
+      <div class="modalHeader">
+        <h2 style="display: flex; align-items: center; gap: 8px; color: var(--color-error);">
+          <svg lucideAlertTriangle size="22"></svg>
+          <span>Deactivation Audit</span>
+        </h2>
+        <button class="closeBtn" (click)="isStatusReasonModalOpen = false">
+          <svg lucideX size="20"></svg>
+        </button>
+      </div>
+
+      <p style="color: var(--color-text-secondary); font-size: 0.9rem; margin-bottom: 20px;">
+        To deactivate <strong>{{ statusToggleOfficer?.name }}</strong>, you must select a reason for archival and audit
+        logs. Their historical sales data will remain fully preserved.
+      </p>
+
+      <form (ngSubmit)="onConfirmStatusToggle()">
+        <div class="formGroup">
+          <label class="formLabel" for="deactReason">Reason for Inactivity</label>
+          <select class="formInput" id="deactReason" name="deactReason" [(ngModel)]="statusDeactivationReason" required
+            style="background-color: rgba(255, 255, 255, 0.02); color: var(--color-text-primary); border: 1px solid var(--border-color); border-radius: 4px; padding: 10px; width: 100%;">
+            <option value="Resigned">Resigned</option>
+            <option value="Transferred">Transferred</option>
+            <option value="On Leave">On Leave</option>
+            <option value="Sabbatical">Sabbatical</option>
+            <option value="Suspended">Suspended</option>
+            <option value="Other">Other / Retired</option>
+          </select>
+        </div>
+
+        <div class="btnGroup">
+          <button class="secondaryBtn" type="button" (click)="isStatusReasonModalOpen = false">Cancel</button>
+          <button class="primaryBtn" type="submit"
+            style="background-color: var(--color-error); box-shadow: 0 2px 6px rgba(239, 68, 68, 0.2);">
+            <span>Archive Account</span>
           </button>
         </div>
       </form>

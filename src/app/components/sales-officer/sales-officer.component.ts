@@ -13,9 +13,10 @@ import {
   LucideAlertCircle,
   LucideShoppingBag,
   LucideGift,
-  LucideLogOut
+  LucideLogOut,
+  LucideX
 } from '@lucide/angular';
-import { DatabaseService, Car as Vehicle, IncentiveSlab as Slab, User } from '../../services/database.service';
+import { DatabaseService, Car as Vehicle, IncentiveSlab as Slab, User, SlabScheme, ModelOverride } from '../../services/database.service';
 import { AuthService } from '../../services/auth.service';
 import { NotificationService } from '../../services/notification.service';
 
@@ -35,7 +36,8 @@ import { NotificationService } from '../../services/notification.service';
     LucideAlertCircle,
     LucideShoppingBag,
     LucideGift,
-    LucideLogOut
+    LucideLogOut,
+    LucideX
   ],
   templateUrl: './sales-officer.component.html',
   styleUrls: ['./sales-officer.component.css']
@@ -43,19 +45,36 @@ import { NotificationService } from '../../services/notification.service';
 export class SalesOfficerComponent implements OnInit {
   user: User | null = null;
   cars: Vehicle[] = [];
+  allCars: Vehicle[] = [];
   slabs: Slab[] = [];
   announcements: any[] = [];
+  overrides: ModelOverride[] = [];
+  activeScheme: SlabScheme | null = null;
+  targetVolume = 0;
 
-  
   month = '';
-  
-  
   volumes: { [carId: string]: number } = {};
 
-  
   isLoading = true;
   isSaving = false;
   feedback: { type: 'success' | 'error'; message: string } | null = null;
+
+  // compliance and мотивационные metrics
+  lastLoginTime = '';
+  lastMonthVolume = 0;
+  lastMonthIncentive = 0;
+  isConfirmSubmitModalOpen = false;
+
+  historyLogs: any[] = [];
+  ytdEarningsTotal = 0;
+  bestMonthLabel = '';
+  bestMonthIncentive = 0;
+  bestMonthVolume = 0;
+  sparklineData: number[] = [];
+  
+  isSlabsExpanded = true;
+  isPayoutExpanded = true;
+  activeTab: 'dashboard' | 'scheme' | 'ledger' = 'dashboard';
 
   constructor(
     private db: DatabaseService,
@@ -69,6 +88,20 @@ export class SalesOfficerComponent implements OnInit {
 
   ngOnInit() {
     this.user = this.auth.getCurrentUser();
+    
+    // Create authentic and compliant security timestamp
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    d.setHours(10, 32, 0, 0);
+    this.lastLoginTime = d.toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    }).replace(' am', ' AM').replace(' pm', ' PM');
+
     this.loadPortalConfig();
   }
 
@@ -85,34 +118,82 @@ export class SalesOfficerComponent implements OnInit {
     this.auth.logout();
   }
 
+  get unreadAnnouncements() {
+    if (!this.user) return this.announcements;
+    const readIds = JSON.parse(localStorage.getItem(`read_announcements_${this.user.id}`) || '[]');
+    return this.announcements.filter(a => !readIds.includes(a.id));
+  }
+
+  markAnnouncementAsRead(id: string) {
+    if (!this.user) return;
+    const key = `read_announcements_${this.user.id}`;
+    const readIds = JSON.parse(localStorage.getItem(key) || '[]');
+    if (!readIds.includes(id)) {
+      readIds.push(id);
+      localStorage.setItem(key, JSON.stringify(readIds));
+    }
+  }
+
   async loadPortalConfig() {
     this.isLoading = true;
     try {
-      const [carsData, slabsData, announcementsData] = await Promise.all([
+      const [carsData, schemesData, announcementsData, targetsData] = await Promise.all([
         this.db.getCars(),
-        this.db.getSlabs(),
-        this.db.getAnnouncements()
+        this.db.getSchemes(),
+        this.db.getAnnouncements(),
+        this.db.getTargets(this.month)
       ]);
 
-      
-      this.cars = carsData.filter(c => c.active);
-      this.slabs = slabsData;
+      this.allCars = carsData;
       this.announcements = announcementsData;
 
-      
+      if (this.user) {
+        const userTarget = targetsData.find(t => t.user_id === this.user?.id);
+        this.targetVolume = userTarget ? userTarget.target_volume : 0;
+      }
+
+      // Find active scheme for selected month
+      const targetDate = `${this.month}-31`;
+      const activeScheme = schemesData
+        .filter(s => s.activation_date <= targetDate)
+        .sort((a, b) => b.activation_date.localeCompare(a.activation_date))[0];
+
+      this.activeScheme = activeScheme || null;
+
+      if (activeScheme) {
+        const [slabsData, overridesData] = await Promise.all([
+          this.db.getSlabs(activeScheme.id),
+          this.db.getOverridesByScheme(activeScheme.id)
+        ]);
+        this.slabs = slabsData;
+        this.overrides = overridesData;
+      } else {
+        this.slabs = [];
+        this.overrides = [];
+      }
+
       const initialVols: { [key: string]: number } = {};
-      this.cars.forEach(c => {
+      this.allCars.forEach(c => {
         initialVols[c.id] = 0;
       });
       this.volumes = initialVols;
 
-      
       await this.fetchMonthlyLogs(this.month, initialVols);
+      this.filterCarsForDisplay();
+      await this.fetchLastMonthStats();
+      await this.fetchHistoryStats();
     } catch (err) {
       console.error('Failed to load configuration:', err);
     } finally {
       this.isLoading = false;
     }
+  }
+
+  filterCarsForDisplay() {
+    this.cars = this.allCars.filter(c => 
+      (c.active && c.eligible_for_incentive && c.launch_status !== 'DISCONTINUED') || 
+      (this.volumes[c.id] > 0)
+    );
   }
 
   async fetchMonthlyLogs(selectedMonth: string, baseVols: { [key: string]: number }) {
@@ -133,7 +214,7 @@ export class SalesOfficerComponent implements OnInit {
 
   async onMonthChange(newMonth: string) {
     const baseVols: { [key: string]: number } = {};
-    this.cars.forEach(c => {
+    this.allCars.forEach(c => {
       baseVols[c.id] = 0;
     });
     this.volumes = baseVols;
@@ -141,6 +222,40 @@ export class SalesOfficerComponent implements OnInit {
     this.isLoading = true;
     try {
       await this.fetchMonthlyLogs(newMonth, baseVols);
+
+      // Re-resolve active scheme, slabs, overrides, and targets for the new month
+      const [schemesData, targetsData] = await Promise.all([
+        this.db.getSchemes(),
+        this.db.getTargets(newMonth)
+      ]);
+
+      if (this.user) {
+        const userTarget = targetsData.find(t => t.user_id === this.user?.id);
+        this.targetVolume = userTarget ? userTarget.target_volume : 0;
+      }
+
+      const targetDate = `${newMonth}-31`;
+      const activeScheme = schemesData
+        .filter(s => s.activation_date <= targetDate)
+        .sort((a, b) => b.activation_date.localeCompare(a.activation_date))[0];
+
+      this.activeScheme = activeScheme || null;
+
+      if (activeScheme) {
+        const [slabsData, overridesData] = await Promise.all([
+          this.db.getSlabs(activeScheme.id),
+          this.db.getOverridesByScheme(activeScheme.id)
+        ]);
+        this.slabs = slabsData;
+        this.overrides = overridesData;
+      } else {
+        this.slabs = [];
+        this.overrides = [];
+      }
+
+      this.filterCarsForDisplay();
+      await this.fetchLastMonthStats();
+      await this.fetchHistoryStats();
       this.notification.info(`Switched billing month to ${newMonth} and synced sales logs.`);
     } catch (err) {
       this.notification.error('Failed to sync sales logs for the selected month.');
@@ -179,14 +294,23 @@ export class SalesOfficerComponent implements OnInit {
     }
   }
 
-  
-
   get totalVolume(): number {
     return Object.values(this.volumes).reduce((a, b) => a + b, 0);
   }
 
+  get eligibleVolume(): number {
+    let sum = 0;
+    Object.entries(this.volumes).forEach(([carId, vol]) => {
+      const car = this.allCars.find(c => c.id === carId);
+      if (car && car.eligible_for_incentive) {
+        sum += vol;
+      }
+    });
+    return sum;
+  }
+
   get activeSlab(): Slab | null {
-    const total = this.totalVolume;
+    const total = this.eligibleVolume;
     return this.slabs.find(s => total >= s.min_volume && (s.max_volume === null || total <= s.max_volume)) || null;
   }
 
@@ -194,8 +318,56 @@ export class SalesOfficerComponent implements OnInit {
     return this.activeSlab ? Number(this.activeSlab.payout_per_car) : 0;
   }
 
+  get targetBonusUnlocked(): boolean {
+    return this.targetVolume > 0 && this.eligibleVolume >= this.targetVolume;
+  }
+
+  get targetBonusAmountEarned(): number {
+    if (!this.targetBonusUnlocked || !this.activeScheme) return 0;
+    const bonusAmount = Number(this.activeScheme.target_bonus_amount) || 0;
+    if (this.activeScheme.target_bonus_type === 'FLAT') {
+      return bonusAmount;
+    } else if (this.activeScheme.target_bonus_type === 'PER_CAR') {
+      return this.eligibleVolume * bonusAmount;
+    }
+    return 0;
+  }
+
+  get targetAchievementPct(): number {
+    if (!this.targetVolume || this.targetVolume <= 0) return 0;
+    return Math.round((this.eligibleVolume / this.targetVolume) * 100);
+  }
+
   get totalPayout(): number {
-    return this.totalVolume * this.activePayoutRate;
+    let payout = 0;
+    const rate = this.activePayoutRate;
+    
+    Object.entries(this.volumes).forEach(([carId, vol]) => {
+      const car = this.allCars.find(c => c.id === carId);
+      if (!car || !car.eligible_for_incentive || vol === 0) return;
+      
+      const override = this.overrides.find(o => o.car_id === carId);
+      if (override) {
+        if (override.override_type === 'FLAT') {
+          payout += vol * Number(override.amount);
+        } else if (override.override_type === 'BONUS') {
+          payout += vol * (rate + Number(override.amount));
+        }
+      } else {
+        payout += vol * rate;
+      }
+    });
+
+    // Add target achievement bonus if unlocked
+    if (this.targetBonusUnlocked && this.activeScheme) {
+      payout += this.targetBonusAmountEarned;
+    }
+
+    return payout;
+  }
+
+  getOverrideForCar(carId: string): ModelOverride | null {
+    return this.overrides.find(o => o.car_id === carId) || null;
   }
 
   get nextSlab(): Slab | null {
@@ -209,7 +381,7 @@ export class SalesOfficerComponent implements OnInit {
 
   get carsNeededForNext(): number {
     const next = this.nextSlab;
-    return next ? next.min_volume - this.totalVolume : 0;
+    return next ? next.min_volume - this.eligibleVolume : 0;
   }
 
   get progressPercentage(): number {
@@ -219,7 +391,7 @@ export class SalesOfficerComponent implements OnInit {
     const active = this.activeSlab;
     const prevMilestone = active ? active.max_volume || 0 : 0;
     const span = next.min_volume - prevMilestone;
-    const currentProgress = this.totalVolume - prevMilestone;
+    const currentProgress = this.eligibleVolume - prevMilestone;
     return Math.min(100, Math.max(0, (currentProgress / span) * 100));
   }
 
@@ -229,5 +401,286 @@ export class SalesOfficerComponent implements OnInit {
       currency: 'INR',
       maximumFractionDigits: 0
     }).format(val);
+  }
+
+  // grace period submission compliance lock (5th of the month cutoff)
+  get isMonthLocked(): boolean {
+    if (!this.month) return false;
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1;
+    const currentDay = now.getDate();
+
+    const [selYear, selMonth] = this.month.split('-').map(Number);
+
+    if (selYear === currentYear && selMonth === currentMonth) {
+      return false; // active month is always editable
+    }
+
+    let isPrevMonth = false;
+    if (selYear === currentYear && selMonth === currentMonth - 1) {
+      isPrevMonth = true;
+    } else if (selYear === currentYear - 1 && currentMonth === 1 && selMonth === 12) {
+      isPrevMonth = true;
+    }
+
+    if (isPrevMonth) {
+      // previous month editable only up to 5th day
+      return currentDay > 5;
+    }
+
+    return true; // older months locked
+  }
+
+  // color indicator selector card
+  get incentiveColorClass(): string {
+    const total = this.eligibleVolume;
+    if (this.slabs.length === 0 || total < this.slabs[0].min_volume) {
+      return 'incentive-red';
+    }
+    const idx = this.activeSlab ? this.slabs.findIndex(s => s.id === this.activeSlab?.id) : -1;
+    if (idx === 0) {
+      return 'incentive-amber';
+    }
+    return 'incentive-green';
+  }
+
+  // dynamic progress markers
+  get targetProgressText(): string {
+    if (this.targetVolume <= 0) return 'Monthly target not assigned yet.';
+    const diff = this.targetVolume - this.eligibleVolume;
+    if (diff > 0) {
+      return `${diff} more to hit target.`;
+    }
+    return 'Target achieved! Dynamic bonus tier unlocked.';
+  }
+
+  // next tier opportunity nudge in dynamic rupees
+  get nextTierPrompt(): string {
+    if (this.slabs.length === 0) return 'Slab structures not configured for this month.';
+    const rate = this.activePayoutRate;
+    const next = this.nextSlab;
+    if (!next) {
+      return 'Congratulations! You are already in the highest payout milestone tier.';
+    }
+    
+    const currentTierLabel = this.activeSlab ? `₹${rate}/car` : 'no tier';
+    const nextRate = Number(next.payout_per_car);
+    const diffCars = this.carsNeededForNext;
+    
+    const currentProj = this.totalPayout;
+    const newProj = (this.eligibleVolume + diffCars) * nextRate; 
+    const earningsOpportunity = newProj - currentProj;
+    
+    return `You are currently in the ${currentTierLabel} tier. Sell ${diffCars} more cars to unlock the ₹${nextRate}/car tier — that unlocks ${this.formatRupee(earningsOpportunity)} in additional earnings!`;
+  }
+
+  get trendDirectionClass(): string {
+    return this.totalPayout >= this.lastMonthIncentive ? 'trend-up' : 'trend-down';
+  }
+
+  async fetchLastMonthStats() {
+    if (!this.user || !this.month) return;
+    const [year, m] = this.month.split('-').map(Number);
+    let lastYear = year;
+    let lastM = m - 1;
+    if (lastM === 0) {
+      lastM = 12;
+      lastYear = year - 1;
+    }
+    const lastMonthStr = `${lastYear}-${String(lastM).padStart(2, '0')}`;
+    
+    try {
+      const [logs, schemesData] = await Promise.all([
+        this.db.getSalesLogs(this.user.id, lastMonthStr),
+        this.db.getSchemes()
+      ]);
+      
+      const totalVol = logs.reduce((sum, l) => sum + Number(l.volume), 0);
+      
+      const targetDate = `${lastMonthStr}-31`;
+      const activeScheme = schemesData
+        .filter(s => s.activation_date <= targetDate)
+        .sort((a, b) => b.activation_date.localeCompare(a.activation_date))[0];
+      
+      let payout = 0;
+      if (activeScheme) {
+        const [slabs, overrides] = await Promise.all([
+          this.db.getSlabs(activeScheme.id),
+          this.db.getOverridesByScheme(activeScheme.id)
+        ]);
+        
+        const eligibleLogs = logs.filter(l => {
+          const car = this.allCars.find(c => c.id === l.car_id);
+          return car && car.eligible_for_incentive;
+        });
+        const eligibleVol = eligibleLogs.reduce((sum, l) => sum + Number(l.volume), 0);
+        
+        const activeSlab = (slabs || []).find(s => eligibleVol >= s.min_volume && (s.max_volume === null || eligibleVol <= s.max_volume)) || null;
+        const rate = activeSlab ? Number(activeSlab.payout_per_car) : 0;
+        
+        logs.forEach(l => {
+          const car = this.allCars.find(c => c.id === l.car_id);
+          if (!car || !car.eligible_for_incentive || Number(l.volume) === 0) return;
+          
+          const override = (overrides || []).find(o => o.car_id === car.id);
+          if (override) {
+            if (override.override_type === 'FLAT') {
+              payout += Number(l.volume) * Number(override.amount);
+            } else if (override.override_type === 'BONUS') {
+              payout += Number(l.volume) * (rate + Number(override.amount));
+            }
+          } else {
+            payout += Number(l.volume) * rate;
+          }
+        });
+        
+        const targets = await this.db.getTargets(lastMonthStr);
+        const targetObj = targets.find(t => t.user_id === this.user?.id);
+        const targetVol = targetObj ? targetObj.target_volume : 0;
+        if (targetVol > 0 && eligibleVol >= targetVol) {
+          const targetBonusType = activeScheme.target_bonus_type || 'NONE';
+          const targetBonusAmount = Number(activeScheme.target_bonus_amount) || 0;
+          if (targetBonusType === 'FLAT') {
+            payout += targetBonusAmount;
+          } else if (targetBonusType === 'PER_CAR') {
+            payout += targetBonusAmount * eligibleVol;
+          }
+        }
+      }
+      
+      this.lastMonthVolume = totalVol;
+      this.lastMonthIncentive = payout;
+    } catch (err) {
+      console.error('Error fetching last month stats:', err);
+      this.lastMonthVolume = 0;
+      this.lastMonthIncentive = 0;
+    }
+  }
+
+  async fetchHistoryStats() {
+    if (!this.user) return;
+    const currentYear = new Date().getFullYear();
+    
+    try {
+      const reports = await this.db.getReportsAndAudits(String(currentYear));
+      if (reports && reports.ytdSummary) {
+        const userYtd = reports.ytdSummary.find(u => u.id === this.user?.id);
+        this.ytdEarningsTotal = userYtd ? userYtd.ytdPayout : 0;
+      }
+
+      const history = [];
+      const schemesData = await this.db.getSchemes();
+      const yearLogs = await this.db.getSalesLogs(this.user.id, '');
+      
+      const monthlyGroups: { [m: string]: any[] } = {};
+      (yearLogs || []).forEach(l => {
+        if (!monthlyGroups[l.month]) monthlyGroups[l.month] = [];
+        monthlyGroups[l.month].push(l);
+      });
+
+      const activeMonths = Object.keys(monthlyGroups).sort((a,b) => b.localeCompare(a));
+      const sparkVols: number[] = [];
+
+      for (const m of activeMonths) {
+        const mLogs = monthlyGroups[m];
+        const totalVol = mLogs.reduce((sum, l) => sum + Number(l.volume), 0);
+        
+        const eligibleLogs = mLogs.filter(l => {
+          const car = this.allCars.find(c => c.id === l.car_id);
+          return car && car.eligible_for_incentive;
+        });
+        const eligibleVol = eligibleLogs.reduce((sum, l) => sum + Number(l.volume), 0);
+
+        const targetDate = `${m}-31`;
+        const activeScheme = schemesData
+          .filter(s => s.activation_date <= targetDate)
+          .sort((a, b) => b.activation_date.localeCompare(a.activation_date))[0];
+
+        let payout = 0;
+        let activeTierLabel = 'No Tier';
+        if (activeScheme) {
+          const slabs = await this.db.getSlabs(activeScheme.id);
+          const overrides = await this.db.getOverridesByScheme(activeScheme.id);
+          
+          const activeSlab = (slabs || []).find(s => eligibleVol >= s.min_volume && (s.max_volume === null || eligibleVol <= s.max_volume)) || null;
+          const rate = activeSlab ? Number(activeSlab.payout_per_car) : 0;
+          if (activeSlab) {
+            activeTierLabel = activeSlab.label || 'Standard';
+          }
+
+          mLogs.forEach(l => {
+            const car = this.allCars.find(c => c.id === l.car_id);
+            if (!car || !car.eligible_for_incentive || Number(l.volume) === 0) return;
+            
+            const override = (overrides || []).find(o => o.car_id === car.id);
+            if (override) {
+              if (override.override_type === 'FLAT') {
+                payout += Number(l.volume) * Number(override.amount);
+              } else if (override.override_type === 'BONUS') {
+                payout += Number(l.volume) * (rate + Number(override.amount));
+              }
+            } else {
+              payout += Number(l.volume) * rate;
+            }
+          });
+
+          const userTarget = await this.db.getTargets(m);
+          const targetObj = userTarget.find(t => t.user_id === this.user?.id);
+          const targetVol = targetObj ? targetObj.target_volume : 0;
+          if (targetVol > 0 && eligibleVol >= targetVol) {
+            const targetBonusType = activeScheme.target_bonus_type || 'NONE';
+            const targetBonusAmount = Number(activeScheme.target_bonus_amount) || 0;
+            if (targetBonusType === 'FLAT') {
+              payout += targetBonusAmount;
+            } else if (targetBonusType === 'PER_CAR') {
+              payout += targetBonusAmount * eligibleVol;
+            }
+          }
+        }
+
+        history.push({
+          month: m,
+          totalCars: totalVol,
+          slabAchieved: activeTierLabel,
+          incentiveEarned: payout
+        });
+
+        sparkVols.push(totalVol);
+      }
+
+      this.historyLogs = history;
+      this.sparklineData = sparkVols.reverse();
+
+      if (history.length > 0) {
+        const sortedBest = [...history].sort((a,b) => b.incentiveEarned - a.incentiveEarned);
+        const best = sortedBest[0];
+        this.bestMonthLabel = best.month;
+        this.bestMonthIncentive = best.incentiveEarned;
+        this.bestMonthVolume = best.totalCars;
+      } else {
+        this.bestMonthLabel = 'N/A';
+        this.bestMonthIncentive = 0;
+        this.bestMonthVolume = 0;
+      }
+
+    } catch (err) {
+      console.error('Error fetching history logs:', err);
+    }
+  }
+
+  // Final two-step confirmation wrapper
+  onSaveLogsConfirm() {
+    if (this.isMonthLocked) return;
+    this.isConfirmSubmitModalOpen = true;
+  }
+
+  toNumber(val: any): number {
+    return Number(val) || 0;
+  }
+
+  getCarName(carId: string): string {
+    const car = this.allCars.find(c => c.id === carId);
+    return car ? `${car.model_name} ${car.base_suffix} (${car.variant})` : 'Unknown Model';
   }
 }

@@ -38,7 +38,10 @@ exports.login = async (req, res, next) => {
       username: user.username,
       name: user.name,
       role: user.role,
-      email: user.email
+      email: user.email,
+      employee_id: user.employee_id,
+      designation: user.designation,
+      reporting_manager: user.reporting_manager
     };
 
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '12h' });
@@ -56,7 +59,7 @@ exports.getMe = async (req, res, next) => {
   try {
     const { data: user, error } = await supabase
       .from('users')
-      .select('id, username, name, role, email, active, created_at, updated_at')
+      .select('id, username, name, role, email, active, employee_id, designation, reporting_manager, created_at, updated_at')
       .eq('id', req.user.id)
       .single();
 

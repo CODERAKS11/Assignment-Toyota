@@ -13,3 +13,21 @@ exports.getAnnouncements = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.createAnnouncement = async (req, res, next) => {
+  try {
+    const { title, content } = req.body;
+    
+    // Auto-generate UUID since it's defined in SQLite schema
+    const id = require('crypto').randomUUID();
+
+    const { data: announcement, error } = await supabase
+      .from('announcements')
+      .insert([{ id, title, content }]);
+
+    if (error) throw error;
+    res.status(201).json(announcement || { success: true });
+  } catch (err) {
+    next(err);
+  }
+};
