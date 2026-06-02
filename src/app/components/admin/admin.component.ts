@@ -7,7 +7,9 @@ import {
   LucideCar,
   LucideTrendingUp,
   LucideUsers,
-  LucideAward
+  LucideAward,
+  LucideDownload,
+  LucidePlus
 } from '@lucide/angular';
 import { DatabaseService, Car as Vehicle, IncentiveSlab as Slab, User, SlabScheme, ModelOverride } from '../../services/database.service';
 import { AuthService } from '../../services/auth.service';
@@ -30,6 +32,8 @@ import { AdminReportsComponent } from './reports/reports.component';
     LucideTrendingUp,
     LucideUsers,
     LucideAward,
+    LucideDownload,
+    LucidePlus,
     AdminInventoryComponent,
     AdminSlabsComponent,
     AdminDashboardComponent,

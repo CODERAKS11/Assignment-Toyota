@@ -34,15 +34,16 @@
         <p>Configure active dealership inventories and incentive slab structures</p>
       </div>
 
-      <div style="display: flex; gap: 10px;">
+      <div style="display: flex; gap: 10px; align-items: center;">
         <label *ngIf="activeTab === 'inventory'" class="primaryBtn"
-          style="background-color: transparent; border: 1px solid var(--border-color); color: var(--color-text-primary); cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
-          <svg lucideDownload size="18" style="transform: rotate(180deg); color: var(--toyota-red);"></svg>
+          style="background-color: transparent; border: 1px solid var(--border-color); color: var(--color-text-primary); cursor: pointer; display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; font-size: 0.85rem; height: 38px; box-sizing: border-box; margin: 0; box-shadow: none;">
+          <svg lucideDownload size="16" style="transform: rotate(180deg); color: var(--toyota-red);"></svg>
           <span>Bulk Import CSV</span>
           <input type="file" accept=".csv" style="display: none;" (change)="onCSVSelected($event)" />
         </label>
-        <button *ngIf="activeTab === 'inventory'" class="primaryBtn" (click)="openAddCarModal()">
-          <svg lucidePlus size="18"></svg>
+        <button *ngIf="activeTab === 'inventory'" class="primaryBtn" (click)="openAddCarModal()"
+          style="padding: 8px 16px; font-size: 0.85rem; height: 38px; box-sizing: border-box; display: inline-flex; align-items: center; gap: 8px; margin: 0; box-shadow: 0 2px 6px rgba(235, 10, 30, 0.15);">
+          <svg lucidePlus size="16"></svg>
           <span>Add Model</span>
         </button>
       </div>

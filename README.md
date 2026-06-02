@@ -6,6 +6,19 @@ A  dealer management portal to track car sales, calculate sales officer incentiv
 
 ---
 
+## Dashboard Previews
+
+### 🏛️ Showroom Vehicle Registry (Admin View)
+![Vehicle Registry](public/screenshots/vehicle_registry.png)
+
+### ⚙️ Dynamic Incentive Slabs & Overrides (Admin View)
+![Dynamic Slabs](public/screenshots/incentive_slabs.png)
+
+### 📊 Personal Sales Incentive Tracker (Sales Officer View)
+![Incentive Tracker](public/screenshots/incentive_tracker.png)
+
+---
+
 ## How to Run Locally
 
 ### 1. Prerequisites
@@ -62,22 +75,25 @@ A  dealer management portal to track car sales, calculate sales officer incentiv
 ## Incentive Rules & Logic
 
 1. **Volume Slabs (Base rate per car):**
-   * 1–3 cars sold: ₹1,000 / car
-   * 4–7 cars sold: ₹2,000 / car
-   * 8+ cars sold: ₹3,500 / car
+   * **Tier 1 (1–3 cars):** ₹800 / car (Base Tier)
+   * **Tier 2 (4–6 cars):** ₹1,500 / car (Silver Tier)
+   * **Tier 3 (7–12 cars):** ₹2,500 / car (Gold Tier)
+   * **Tier 4 (13–20 cars):** ₹4,000 / car (Platinum Tier)
+   * **Tier 5 (21+ cars):** ₹6,000 / car (Diamond Tier)
 
 2. **Model Overrides:**
-   * **Flat Override:** Replaces the base slab rate (e.g. Fortuner pays flat ₹5,000/car).
-   * **Bonus Override:** Adds to the base slab rate (e.g. Hilux pays base rate + ₹1,500/car).
+   * **Bonus Override:** Adds a bonus boost on top of the base slab rate (e.g. Hilux adds a bonus of **+₹2,500 / car**).
+   * **Excluded Models:** Certain entry-level models do not earn incentives and are excluded from the eligible units count (e.g. Glanza is **Excluded**).
 
-3. **Target Completion Bonus:**
-   * Reaching 100% of target adds a bonus (flat amount or multiplier).
+### Math Example (June 2026 Logs):
+If a Sales Officer sells **16 cars** in a month:
+* 2 x Urban Cruiser Hyryder, 2 x Rumion, 2 x Innova Crysta, 2 x Innova Hycross, 2 x Fortuner, 2 x Camry, 2 x Hilux (14 eligible units)
+* 2 x Glanza (Excluded model = 0 eligible units)
 
-### Math Example (Rahul Sharma, Target = 10 cars):
-If Rahul sells **16 cars**:
-* **10 x Fortuner** (Flat override ₹5,000) = ₹50,000
-* **4 x Corolla Altis** (Qualifies for Slab 3 standard rate of ₹3,500 because eligible sales = 14) = 4 * ₹3,500 = ₹14,000
-* **2 x Glanza** (Ineligible model) = ₹0
-* **Target Achievement Bonus** (14 eligible sales >= 10 target) = ₹5,000 flat bonus.
+**Calculations:**
+1. **Eligible Volume:** 14 units (excluding the 2 Glanzas).
+2. **Slab Tier Achieved:** 14 units falls into **Tier 4 (13–20 cars)**, setting the base rate to **₹4,000 / car**.
+3. **Base Commission:** 14 eligible units * ₹4,000 = **₹56,000**
+4. **Model Bonus (Hilux):** 2 Hilux units * ₹2,500 bonus override = **₹5,000**
 
-**Total Payout:** ₹50,000 + ₹14,000 + ₹5,000 = **₹69,000**
+**Total Incentive Payout:** ₹56,000 + ₹5,000 = **₹61,000**
