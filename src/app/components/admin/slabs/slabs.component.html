@@ -1,0 +1,322 @@
+<div class="panel glass-panel" style="margin: 0; border: none; box-shadow: none; background: transparent; padding: 0;">
+  <div
+    style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px;">
+    <div>
+      <h2 style="font-size: 1.25rem; margin-bottom: 6px;">Configure Incentive Slab Schemes</h2>
+      <p style="color: var(--color-text-secondary); font-size: 0.88rem;">
+        Establish dynamic payout versions, set activation dates, and configure per-model overrides.
+      </p>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <div class="analytics-picker-group"
+        style="margin: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 4px;">
+        <label class="analytics-label"
+          style="font-size: 0.65rem; text-transform: uppercase; margin: 0; font-weight: 700; color: var(--color-accent);">Active
+          Version</label>
+        <select class="analytics-picker"
+          style="min-width: 200px; background: rgba(0, 0, 0, 0.2); color: var(--color-text-primary); border: 1px solid var(--border-color); border-radius: 4px; padding: 6px 12px;"
+          [ngModel]="selectedSchemeId" (ngModelChange)="onSchemeSelected($event)">
+          <option *ngFor="let s of schemes" [value]="s.id">
+            {{ s.name }} (Starts {{ s.activation_date }})
+          </option>
+        </select>
+      </div>
+      <button class="primaryBtn" style="padding: 8px 12px; font-size: 0.8rem; height: 38px; margin-top: auto;"
+        (click)="openAddSchemeModal()">
+        <svg lucidePlus size="14"></svg>
+        <span>New Scheme</span>
+      </button>
+      <button *ngIf="selectedSchemeId && !isSchemeReadOnly" class="secondaryBtn"
+        style="padding: 8px 12px; font-size: 0.8rem; height: 38px; margin-top: auto; background-color: rgba(239, 68, 68, 0.15); color: #f87171; border-color: rgba(239, 68, 68, 0.3);"
+        (click)="onDeleteScheme()">
+        <svg lucideTrash2 size="14"></svg>
+        <span>Delete</span>
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="slabFeedback" class="slabWarnBanner"
+    [style.background]="slabFeedback.type === 'success' ? 'rgba(16, 185, 129, 0.08)' : 'rgba(239, 68, 68, 0.08)'"
+    [style.borderColor]="slabFeedback.type === 'success' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'"
+    [style.color]="slabFeedback.type === 'success' ? '#a7f3d0' : '#fca5a5'" style="margin-bottom: 20px;">
+    <svg lucideAlertTriangle
+      [style.color]="slabFeedback.type === 'success' ? 'var(--color-success)' : 'var(--color-error)'"
+      size="18"></svg>
+    <span>{{ slabFeedback.message }}</span>
+  </div>
+
+  <div *ngIf="isLoadingSlabs" class="emptyState" style="padding: 40px 0;">
+    <svg lucideRefreshCw class="animate-spin" size="24" style="margin: 0 auto 10px; display: block;"></svg>
+    <p>Loading active slabs and overrides...</p>
+  </div>
+
+  <div *ngIf="!isLoadingSlabs">
+    <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 30px; margin-bottom: 30px;">
+      <h3
+        style="font-size: 1.05rem; font-weight: 700; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 0.02em; color: var(--color-accent); display: flex; align-items: center; gap: 8px;">
+        <svg lucideLayers size="16"></svg>
+        <span>Quantity Milestone Tiers</span>
+      </h3>
+
+      <div *ngIf="slabs.length === 0" class="emptyState" style="padding: 20px 0;">
+        <p>No slabs configured for this scheme version.</p>
+        <button *ngIf="!isSchemeReadOnly" class="primaryBtn" (click)="onAddSlab()" style="margin-top: 10px;">Add
+          Initial Slab</button>
+      </div>
+
+      <div *ngIf="slabs.length > 0">
+        <div class="slabList">
+          <div *ngFor="let slab of slabs; let idx = index; let isLast = last" class="slabItem"
+            style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-bottom: 12px;">
+            <span class="slabLabel" style="min-width: 60px;">Tier {{ idx + 1 }}</span>
+
+            <div class="slabInputWrap" style="width: 100px;">
+              <input class="slabInput"
+                style="text-align: center; padding: 10px 12px 10px 40px; background: rgba(255,255,255,0.01); cursor: not-allowed;"
+                type="text" [value]="slab.min_volume" disabled />
+              <span class="slabUnit" style="right: auto; left: 10px;">Min</span>
+            </div>
+
+            <span style="color: var(--color-text-muted);">to</span>
+
+            <div *ngIf="isLast" class="slabUnlimitedBadge" style="width: 140px; padding: 10px 12px;">
+              ∞ (Infinite)
+            </div>
+
+            <div *ngIf="!isLast" class="slabInputWrap" style="width: 120px;">
+              <input class="slabInput" style="padding-right: 48px;" type="number" [min]="slab.min_volume"
+                [(ngModel)]="slab.max_volume"
+                (ngModelChange)="onUpdateSlab(idx, { max_volume: slab.max_volume })" />
+              <span class="slabUnit">Cars</span>
+            </div>
+
+            <span style="color: var(--color-text-muted);">=</span>
+
+            <div class="slabInputWrap" style="width: 130px;">
+              <input class="slabInput slabInputLeftSymbol" style="padding-left: 28px; padding-right: 48px;"
+                type="number" min="0" [(ngModel)]="slab.payout_per_car" />
+              <span class="slabUnitLeft" style="left: 10px;">₹</span>
+              <span class="slabUnit">/ Car</span>
+            </div>
+
+            <div class="slabInputWrap" style="flex: 1; min-width: 140px;">
+              <input class="slabInput" style="text-align: left; padding: 10px 12px;" type="text"
+                placeholder="Tier Label Name" [(ngModel)]="slab.label" />
+            </div>
+
+            <button class="slabRemoveBtn" (click)="onRemoveSlab(idx)" [disabled]="slabs.length === 1"
+              title="Remove Payout Slab">
+              <svg lucideTrash2 size="16"></svg>
+            </button>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 12px; justify-content: flex-start; margin-top: 20px;">
+          <button class="secondaryBtn" (click)="onAddSlab()">
+            <svg lucidePlus size="16"></svg>
+            <span>Add Next Tier</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Target Achievement Bonus Settings -->
+    <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 30px; margin-bottom: 30px;"
+      *ngIf="selectedScheme">
+      <h3
+        style="font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.02em; color: var(--color-accent); display: flex; align-items: center; gap: 8px;">
+        <svg lucideSparkles size="16" style="color: var(--toyota-red);"></svg>
+        <span>Target Achievement Bonus Settings</span>
+      </h3>
+      <p style="color: var(--color-text-secondary); font-size: 0.85rem; margin-bottom: 20px;">
+        Configure bonus multipliers unlocked when a Sales Officer reaches 100% of their assigned monthly target
+        volume.
+      </p>
+
+      <div
+        style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); border-radius: 6px; padding: 20px; display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-end;">
+        <div style="flex: 1; min-width: 200px;">
+          <label class="formLabel" style="font-size: 0.75rem;">Bonus Scheme Type</label>
+          <select class="formInput" [(ngModel)]="targetBonusType"
+            style="background-color: rgba(255, 255, 255, 0.02); color: var(--color-text-primary); border: 1px solid var(--border-color); border-radius: 4px; padding: 10px; width: 100%;">
+            <option value="NONE">No Bonus Tier</option>
+            <option value="FLAT">Flat Lump Sum (Unlocks on 100% Target)</option>
+            <option value="PER_CAR">Per-Car Payout Boost (Unlocks on 100% Target)</option>
+          </select>
+        </div>
+
+        <div style="flex: 1; min-width: 200px;" *ngIf="targetBonusType !== 'NONE'">
+          <label class="formLabel" style="font-size: 0.75rem;">
+            {{ targetBonusType === 'FLAT' ? 'Flat Reward Amount' : 'Commission Boost per Car' }}
+          </label>
+          <div class="slabInputWrap" style="width: 100%;">
+            <input class="slabInput slabInputLeftSymbol"
+              style="padding-left: 24px; padding-top: 10px; padding-bottom: 10px; background-color: rgba(255,255,255,0.02);"
+              type="number" min="0" [(ngModel)]="targetBonusAmount" />
+            <span class="slabUnitLeft" style="left: 8px; top: 10px;">₹</span>
+            <span class="slabUnit">{{ targetBonusType === 'FLAT' ? 'flat' : '/ car' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Model Overrides Section -->
+    <div>
+      <h3
+        style="font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.02em; color: var(--color-accent); display: flex; align-items: center; gap: 8px;">
+        <svg lucideCar size="16"></svg>
+        <span>Model-Level Commission Overrides</span>
+      </h3>
+      <p style="color: var(--color-text-secondary); font-size: 0.85rem; margin-bottom: 20px;">
+        Customize incentives for specific vehicle lines (e.g. Camry, Hilux).
+        <strong>Flat Overrides</strong> replace the slab rate entirely, while <strong>Bonus Overrides</strong> add a
+        payout boost on top of whatever slab tier is reached.
+      </p>
+
+      <div *ngIf="overrides.length === 0" class="emptyState"
+        style="padding: 20px 0; background: rgba(255, 255, 255, 0.01); border: 1px dashed var(--border-color); border-radius: 6px; margin-bottom: 20px;">
+        <p>No model overrides configured for this scheme.</p>
+      </div>
+
+      <div *ngIf="overrides.length > 0" class="tableContainer"
+        style="margin-bottom: 25px; background: rgba(0, 0, 0, 0.1); border-radius: 6px; padding: 10px;">
+        <table class="table" style="box-shadow: none; background: transparent;">
+          <thead>
+            <tr>
+              <th>Vehicle Model Specification</th>
+              <th>Override Type</th>
+              <th>Value / Commission Amount</th>
+              <th *ngIf="!isSchemeReadOnly" style="text-align: right; width: 80px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let o of overrides; let oIdx = index">
+              <td style="font-weight: 600;">{{ getCarLabel(o.car_id) }}</td>
+              <td>
+                <span class="statusBadge"
+                  [style.background]="o.override_type === 'FLAT' ? 'rgba(16, 185, 129, 0.12)' : 'rgba(59, 130, 246, 0.12)'"
+                  [style.color]="o.override_type === 'FLAT' ? '#10b981' : '#3b82f6'">
+                  {{ o.override_type === 'FLAT' ? 'FLAT RATE' : 'BONUS BOOST' }}
+                </span>
+              </td>
+              <td style="font-weight: 700; color: var(--toyota-red);">
+                {{ formatRupee(o.amount) }}{{ o.override_type === 'BONUS' ? ' extra' : ' / car' }}
+              </td>
+              <td *ngIf="!isSchemeReadOnly" style="text-align: right;">
+                <button class="slabRemoveBtn" style="padding: 6px; margin: 0;" (click)="onRemoveOverride(oIdx)"
+                  title="Remove Override">
+                  <svg lucideTrash2 size="14"></svg>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div *ngIf="!isSchemeReadOnly"
+        style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); border-radius: 6px; padding: 20px; margin-bottom: 25px;">
+        <h4
+          style="font-size: 0.9rem; font-weight: 700; margin-bottom: 12px; text-transform: uppercase; color: var(--color-text-secondary);">
+          Configure Separate Model Payout</h4>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end;">
+          <div style="flex: 2; min-width: 200px;">
+            <label class="formLabel" style="font-size: 0.75rem;">Select Eligible Car</label>
+            <select class="formInput" [(ngModel)]="newOverrideCarId"
+              style="background-color: rgba(0, 0, 0, 0.2); color: var(--color-text-primary); border: 1px solid var(--border-color); border-radius: 4px; padding: 10px; width: 100%;">
+              <option value="">-- Select Active Vehicle Model --</option>
+              <option *ngFor="let c of eligibleOverrideCars" [value]="c.id">
+                {{ c.model_name }} {{ c.base_suffix }} ({{ c.variant }})
+              </option>
+            </select>
+          </div>
+
+          <div style="flex: 1; min-width: 140px;">
+            <label class="formLabel" style="font-size: 0.75rem;">Override Scheme</label>
+            <select class="formInput" [(ngModel)]="newOverrideType"
+              style="background-color: rgba(0, 0, 0, 0.2); color: var(--color-text-primary); border: 1px solid var(--border-color); border-radius: 4px; padding: 10px; width: 100%;">
+              <option value="FLAT">Flat Rate / Car</option>
+              <option value="BONUS">Bonus on top of Slab</option>
+            </select>
+          </div>
+
+          <div style="flex: 1; min-width: 120px;">
+            <label class="formLabel" style="font-size: 0.75rem;">Commission Amount</label>
+            <div class="slabInputWrap" style="width: 100%;">
+              <input class="slabInput slabInputLeftSymbol"
+                style="padding-left: 24px; padding-top: 10px; padding-bottom: 10px; background-color: rgba(0,0,0,0.2);"
+                type="number" min="0" [(ngModel)]="newOverrideAmount" />
+              <span class="slabUnitLeft" style="left: 8px; top: 10px;">₹</span>
+            </div>
+          </div>
+
+          <button class="secondaryBtn" style="padding: 10px 20px; font-weight: 700; height: 42px;"
+            [disabled]="!newOverrideCarId" (click)="onAddOverride()">
+            <svg lucidePlus size="16"></svg>
+            <span>Add Override</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Single Unified Publish Button for All Configurations -->
+      <div style="display: flex; gap: 12px; justify-content: flex-start; margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 24px;">
+        <button class="primaryBtn" (click)="onPublishSchemeSettings()" [disabled]="isSavingSlabs"
+          style="background: linear-gradient(135deg, var(--toyota-red) 0%, #eb0a1e 100%); padding: 12px 28px; font-size: 1rem; font-weight: 700; box-shadow: 0 4px 15px rgba(235, 10, 30, 0.2);">
+          <svg *ngIf="isSavingSlabs" lucideRefreshCw class="animate-spin" size="18"></svg>
+          <svg *ngIf="!isSavingSlabs" lucideSave size="18"></svg>
+          <span>{{ isSchemeReadOnly ? 'Publish as New Active Version' : 'Publish Scheme & Save All Configurations' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Create Slab Scheme Modal -->
+<div *ngIf="isSchemeModalOpen" class="modalOverlay">
+  <div class="modal glass-panel" style="max-width: 500px;">
+    <div class="modalHeader">
+      <h2>Create Slab Scheme Version</h2>
+      <button class="closeBtn" (click)="isSchemeModalOpen = false">
+        <svg lucideX size="20"></svg>
+      </button>
+    </div>
+
+    <form (ngSubmit)="onSaveScheme()">
+      <div class="formGroup">
+        <label class="formLabel" for="schemeName">Version Scheme Name</label>
+        <input class="formInput" type="text" id="schemeName" name="schemeName"
+          placeholder="e.g. Q2 FY2026 Scheme, Q3 FY2026 Promo" [(ngModel)]="newSchemeName" required />
+      </div>
+
+      <div class="formGroup">
+        <label class="formLabel" for="schemeDate">Scheme Activation Date</label>
+        <input class="formInput" type="date" id="schemeDate" name="schemeDate" [(ngModel)]="newSchemeActivationDate"
+          required
+          style="background-color: rgba(255, 255, 255, 0.02); color: var(--color-text-primary); border: 1px solid var(--border-color); border-radius: 4px; padding: 10px; width: 100%;" />
+      </div>
+
+      <div class="formGroup">
+        <label class="formLabel" for="schemeClone">Clone Configuration Template</label>
+        <select class="formInput" id="schemeClone" name="schemeClone" [(ngModel)]="newSchemeCloneFromId"
+          style="background-color: rgba(255, 255, 255, 0.02); color: var(--color-text-primary); border: 1px solid var(--border-color); border-radius: 4px; padding: 10px; width: 100%;">
+          <option value="">-- Create Empty Scheme --</option>
+          <option *ngFor="let s of schemes" [value]="s.id">
+            Clone from: {{ s.name }} (Starts {{ s.activation_date }})
+          </option>
+        </select>
+        <p style="font-size: 0.72rem; color: var(--color-text-secondary); margin-top: 4px;">
+          Cloning will copy all slabs and overrides definitions directly into the new version to save configuration
+          time.
+        </p>
+      </div>
+
+      <div class="btnGroup">
+        <button class="secondaryBtn" type="button" (click)="isSchemeModalOpen = false">Cancel</button>
+        <button class="primaryBtn" type="submit" [disabled]="!newSchemeName.trim() || !newSchemeActivationDate">
+          <span>Create Version</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

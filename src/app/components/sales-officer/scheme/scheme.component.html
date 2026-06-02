@@ -1,0 +1,159 @@
+<div class="scheme-details-container glass-panel" style="padding: 30px; border-radius: 12px; background: #ffffff; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 24px; border: 1px solid var(--border-color); text-align: left;">
+  <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 20px; margin-bottom: 24px;">
+    <div>
+      <h2 style="font-size: 1.5rem; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 10px; color: var(--color-text-primary);">
+        <svg lucideAward style="color: var(--toyota-red);" size="24"></svg>
+        <span>{{ activeScheme?.name || 'No Active Scheme' }}</span>
+      </h2>
+      <p style="color: var(--color-text-secondary); font-size: 0.9rem; margin: 6px 0 0 0;">
+        Active incentive guidelines, progressive volume slabs, and commission overrides for the currently selected period.
+      </p>
+    </div>
+    <div style="text-align: right;">
+      <span class="statusBadge" 
+            [style.background]="activeScheme ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)'"
+            [style.color]="activeScheme ? '#10b981' : '#ef4444'"
+            [style.borderColor]="activeScheme ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)'"
+            style="border: 1px solid; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; padding: 4px 10px; border-radius: 6px; display: inline-block;">
+        {{ activeScheme ? 'ACTIVE FOR ' + month : 'INACTIVE' }}
+      </span>
+      <div style="font-size: 0.78rem; color: var(--color-text-muted); margin-top: 6px;" *ngIf="activeScheme">
+        Activation Date: <span style="font-family: var(--font-mono); font-weight: 600;">{{ activeScheme.activation_date }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!activeScheme" style="text-align: center; padding: 40px; color: var(--color-text-secondary);">
+    <svg lucideAlertCircle style="color: var(--color-text-muted); margin-bottom: 12px;" size="40"></svg>
+    <p>There is no active slab incentive scheme published for this billing period.</p>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 24px;" *ngIf="activeScheme">
+    <!-- Section 1: Target Completion Bonus -->
+    <div class="scheme-section-card">
+      <h3 class="scheme-section-title">
+        <svg lucideAward style="color: #f59e0b;" size="18"></svg>
+        <span>Target Completion Bonus</span>
+      </h3>
+      <div *ngIf="activeScheme.target_bonus_type === 'NONE'" style="color: var(--color-text-secondary); font-size: 0.88rem; font-style: italic;">
+        No target completion bonus configured for this scheme period.
+      </div>
+      <div *ngIf="activeScheme.target_bonus_type !== 'NONE'">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+          <div style="background: rgba(245, 158, 11, 0.1); padding: 8px; border-radius: 8px;">
+            <svg lucideGift style="color: #d97706;" size="20"></svg>
+          </div>
+          <div>
+            <div style="font-size: 1.15rem; font-weight: 800; color: var(--color-text-primary);">
+              {{ formatRupee(activeScheme.target_bonus_amount) }}
+            </div>
+            <div style="font-size: 0.78rem; color: var(--color-text-secondary); font-weight: 600;">
+              {{ activeScheme.target_bonus_type === 'FLAT' ? 'Flat Lump-Sum Payout' : 'Bonus Boost per Eligible Car' }}
+            </div>
+          </div>
+        </div>
+        <p style="font-size: 0.82rem; color: var(--color-text-secondary); line-height: 1.4; margin: 0;">
+          Earn this extra incentive by achieving **100% or more** of your assigned monthly target volume.
+          Current Month Target: **{{ targetVolume || 'Pending Assignment' }} units**.
+        </p>
+      </div>
+    </div>
+
+    <!-- Section 2: Volume-Based Incentive Slabs -->
+    <div class="scheme-section-card">
+      <h3 class="scheme-section-title">
+        <svg lucideTrendingUp style="color: var(--toyota-red);" size="18"></svg>
+        <span>Volume-Based Incentive Slabs</span>
+      </h3>
+      <p style="font-size: 0.82rem; color: var(--color-text-secondary); margin-bottom: 16px; line-height: 1.4;">
+        Commission rates are calculated progressively based on total eligible units sold during the month.
+      </p>
+      <div class="trackerSlabs" style="margin-bottom: 0;">
+        <div *ngFor="let slab of slabs" class="trackerSlabItem"
+          [class.trackerSlabActive]="activeSlab && activeSlab.id === slab.id"
+          style="display: flex; justify-content: space-between; align-items: center; padding: 12px 14px;">
+          <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 2px;">
+            <span class="slabItemRange" style="font-weight: 700;">
+              {{ slab.min_volume }}{{ slab.max_volume === null ? '+' : '–' + slab.max_volume }} Units Sold
+            </span>
+            <span *ngIf="slab.label" style="font-size: 0.72rem; color: var(--color-text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em;">
+              {{ slab.label }}
+            </span>
+          </div>
+          <span class="slabItemRate" style="font-weight: 700;">
+            {{ formatRupee(slab.payout_per_car) }} / Car
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3: Full Showroom Vehicle Catalog & Commission Rules -->
+    <div class="scheme-section-card">
+      <h3 class="scheme-section-title">
+        <svg lucideShoppingBag style="color: #3b82f6;" size="18"></svg>
+        <span>Showroom Vehicle Catalog & Commission Rules</span>
+      </h3>
+      <p style="font-size: 0.82rem; color: var(--color-text-secondary); margin-bottom: 16px; line-height: 1.4;">
+        Full listing of showroom vehicle models showing their ex-showroom prices, segment classification, incentive eligibility status, and any active commission overrides for the scheme period.
+      </p>
+      
+      <div class="tableContainer" style="margin: 0; border: 1px solid var(--border-color); border-radius: 6px;">
+        <table class="table" style="background: transparent; box-shadow: none; margin: 0;">
+          <thead>
+            <tr>
+              <th style="font-size: 0.75rem; padding: 12px 14px; text-align: left;">Model Details</th>
+              <th style="font-size: 0.75rem; padding: 12px 14px; text-align: center;">Segment</th>
+              <th style="font-size: 0.75rem; padding: 12px 14px; text-align: center;">Ex-Showroom Price</th>
+              <th style="font-size: 0.75rem; padding: 12px 14px; text-align: center;">Eligibility Status</th>
+              <th style="font-size: 0.75rem; padding: 12px 14px; text-align: right;">Commission Payout Rule</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let car of allCars">
+              <td style="font-weight: 700; font-size: 0.85rem; padding: 12px 14px; text-align: left; line-height: 1.3;">
+                <span style="color: var(--color-text-primary); display: block;">{{ car.model_name }}</span>
+                <span style="font-size: 0.7rem; color: var(--color-text-muted); font-weight: 600; text-transform: uppercase;">
+                  {{ car.base_suffix }} | {{ car.variant }}
+                </span>
+              </td>
+              <td style="text-align: center; font-size: 0.8rem; font-weight: 600; color: var(--color-text-secondary); padding: 12px 14px;">
+                {{ car.segment }}
+              </td>
+              <td style="text-align: center; font-size: 0.8rem; font-family: var(--font-mono); font-weight: 700; color: var(--toyota-red); padding: 12px 14px;">
+                {{ car.ex_showroom_price || 'N/A' }}
+              </td>
+              <td style="text-align: center; padding: 12px 14px;">
+                <span class="statusBadge"
+                      [style.background]="car.eligible_for_incentive ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)'"
+                      [style.color]="car.eligible_for_incentive ? '#10b981' : '#dc2626'"
+                      [style.borderColor]="car.eligible_for_incentive ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)'"
+                      style="border: 1px solid; font-size: 0.68rem; font-weight: 800; text-transform: uppercase; padding: 4px 8px; border-radius: 4px; display: inline-block; letter-spacing: 0.02em;">
+                  {{ car.eligible_for_incentive ? 'Eligible' : 'Ineligible' }}
+                </span>
+              </td>
+              <td style="text-align: right; font-weight: 700; font-size: 0.82rem; padding: 12px 14px; line-height: 1.3;">
+                <div *ngIf="!car.eligible_for_incentive" style="color: var(--color-text-muted); font-weight: 500;">
+                  No Payout (Ineligible)
+                </div>
+                <div *ngIf="car.eligible_for_incentive">
+                  <div *ngIf="getOverrideForCar(car.id) as override">
+                    <span class="statusBadge"
+                          [style.background]="override.override_type === 'FLAT' ? 'rgba(16, 185, 129, 0.12)' : 'rgba(59, 130, 246, 0.12)'"
+                          [style.color]="override.override_type === 'FLAT' ? '#10b981' : '#3b82f6'"
+                          [style.borderColor]="override.override_type === 'FLAT' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(59, 130, 246, 0.2)'"
+                          style="border: 1px solid; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; display: inline-block;">
+                      {{ override.override_type === 'FLAT' ? '' : '+' }}{{ formatRupee(override.amount) }} {{ override.override_type === 'FLAT' ? 'Flat Override' : 'Bonus Boost' }}
+                    </span>
+                  </div>
+                  <div *ngIf="!getOverrideForCar(car.id)" style="color: var(--color-text-secondary); font-weight: 600;">
+                    Standard Slab Rate
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

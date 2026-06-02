@@ -1,0 +1,153 @@
+<div class="panel glass-panel" style="margin: 0; border: none; box-shadow: none; background: transparent; padding: 0;">
+  <div *ngIf="isLoadingCars" class="emptyState">
+    <svg lucideRefreshCw class="animate-spin" size="24" style="margin: 0 auto 10px; display: block;"></svg>
+    <p>Loading vehicle logs...</p>
+  </div>
+
+  <div *ngIf="!isLoadingCars && cars.length === 0" class="emptyState">
+    <svg lucideCar size="40" class="emptyIcon" style="margin-bottom: 12px; display: block;"></svg>
+    <p>No active vehicles in Registry. Click 'Add Model' above to expand inventory.</p>
+  </div>
+
+  <div *ngIf="!isLoadingCars && cars.length > 0" class="tableContainer">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Model Name</th>
+          <th>Suffix</th>
+          <th>Engine / Variant</th>
+          <th>Ex-Showroom</th>
+          <th>Segment</th>
+          <th>Incentive</th>
+          <th>Launch Status</th>
+          <th style="text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let car of cars">
+          <td style="font-weight: 600;">{{ car.model_name }}</td>
+          <td>
+            <span
+              style="font-family: var(--font-mono); font-size: 0.85rem; background: rgba(0,0,0,0.03); border: 1px solid var(--border-color); padding: 2px 6px; borderRadius: 4px;">
+              {{ car.base_suffix }}
+            </span>
+          </td>
+          <td>{{ car.variant }}</td>
+          <td style="font-weight: 700; color: var(--toyota-red);">{{ car.ex_showroom_price || 'N/A' }}</td>
+          <td>
+            <span class="statusBadge"
+              style="background: rgba(0, 0, 0, 0.05); color: var(--color-text-secondary); font-size: 0.75rem; text-transform: uppercase;">
+              {{ car.segment || 'SUV' }}
+            </span>
+          </td>
+          <td>
+            <span class="statusBadge" [class.statusActive]="car.eligible_for_incentive"
+              [class.statusInactive]="!car.eligible_for_incentive">
+              {{ car.eligible_for_incentive ? 'Eligible' : 'Excluded' }}
+            </span>
+          </td>
+          <td>
+            <span class="statusBadge" [class.statusActive]="car.launch_status === 'ACTIVE'"
+              [class.statusInactive]="car.launch_status === 'DISCONTINUED'"
+              [style.background]="car.launch_status === 'UPCOMING' ? 'rgba(59, 130, 246, 0.1)' : ''"
+              [style.color]="car.launch_status === 'UPCOMING' ? '#3b82f6' : ''">
+              {{ car.launch_status || 'ACTIVE' }}
+            </span>
+          </td>
+          <td style="text-align: right;">
+            <div class="actionGroup" style="justify-content: flex-end;">
+              <button class="actionBtn" (click)="openEditCarModal(car)" title="Edit Configuration">
+                <svg lucideEdit2 size="15"></svg>
+              </button>
+              <button class="actionBtn actionBtnDelete" (click)="onDeleteCar(car.id)" title="Delete Model">
+                <svg lucideTrash2 size="15"></svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Add/Edit Car Modal -->
+<div *ngIf="isCarModalOpen" class="modalOverlay">
+  <div class="modal glass-panel">
+    <div class="modalHeader">
+      <h2>{{ editingCar ? 'Edit Specifications' : 'Register Vehicle' }}</h2>
+      <button class="closeBtn" (click)="isCarModalOpen = false">
+        <svg lucideX size="20"></svg>
+      </button>
+    </div>
+
+    <form (ngSubmit)="onSaveCar()">
+      <div class="formGroup">
+        <label class="formLabel" for="modelName">Model Line Name</label>
+        <input class="formInput" type="text" id="modelName" name="modelName"
+          placeholder="e.g. Fortuner, Innova, Camry" [(ngModel)]="modelName" required />
+      </div>
+
+      <div class="formGroup">
+        <label class="formLabel" for="baseSuffix">Base Suffix</label>
+        <input class="formInput" type="text" id="baseSuffix" name="baseSuffix" placeholder="e.g. G, V, VX, ZX, GR-S"
+          [(ngModel)]="baseSuffix" required />
+      </div>
+
+      <div class="formGroup">
+        <label class="formLabel" for="variant">Variant / Engine</label>
+        <input class="formInput" type="text" id="variant" name="variant"
+          placeholder="e.g. Hybrid, Turbo Diesel, Petrol, PHEV" [(ngModel)]="variant" required />
+      </div>
+
+      <div class="formGroup">
+        <label class="formLabel" for="exShowroomPrice">Ex-Showroom Price</label>
+        <input class="formInput" type="text" id="exShowroomPrice" name="exShowroomPrice"
+          placeholder="e.g. ₹11.69L or ₹16.73L" [(ngModel)]="exShowroomPrice" />
+      </div>
+
+      <div class="formGroup">
+        <label class="formLabel" for="segment">Market Segment Taxonomy</label>
+        <select class="formInput" id="segment" name="segment" [(ngModel)]="segment" required
+          style="background-color: rgba(255, 255, 255, 0.02); color: var(--color-text-primary); border: 1px solid var(--border-color); border-radius: 4px; padding: 10px; width: 100%;">
+          <option value="SUV">SUV</option>
+          <option value="MUV">MUV</option>
+          <option value="Sedan">Sedan</option>
+          <option value="Hatchback">Hatchback</option>
+          <option value="Pickup">Pickup</option>
+        </select>
+      </div>
+
+      <div class="formGroup">
+        <label class="formLabel" for="launchStatus">Model Launch Status</label>
+        <select class="formInput" id="launchStatus" name="launchStatus" [(ngModel)]="launchStatus" required
+          style="background-color: rgba(255, 255, 255, 0.02); color: var(--color-text-primary); border: 1px solid var(--border-color); border-radius: 4px; padding: 10px; width: 100%;">
+          <option value="ACTIVE">ACTIVE</option>
+          <option value="DISCONTINUED">DISCONTINUED</option>
+          <option value="UPCOMING">UPCOMING</option>
+        </select>
+      </div>
+
+      <div class="switchGroup" style="margin-bottom: 20px;">
+        <input class="switchInput" type="checkbox" id="eligibleForIncentive" name="eligibleForIncentive"
+          [(ngModel)]="eligibleForIncentive" />
+        <label class="switchLabel" for="eligibleForIncentive">
+          Eligible for Incentive Commission Slabs
+        </label>
+      </div>
+
+      <div *ngIf="editingCar" class="switchGroup">
+        <input class="switchInput" type="checkbox" id="isActive" name="isActive" [(ngModel)]="isActive" />
+        <label class="switchLabel" for="isActive">
+          Status is Active (Make available for Sales Officers)
+        </label>
+      </div>
+
+      <div class="btnGroup">
+        <button class="secondaryBtn" type="button" (click)="isCarModalOpen = false">Cancel</button>
+        <button class="primaryBtn" type="submit">
+          <span>{{ editingCar ? 'Update Model' : 'Register Vehicle' }}</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

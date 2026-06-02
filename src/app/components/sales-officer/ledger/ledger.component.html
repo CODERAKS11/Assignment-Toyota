@@ -1,0 +1,67 @@
+<div class="panel glass-panel" style="margin: 0; border: none; box-shadow: none; background: transparent; padding: 0;">
+  <div
+    style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+    <div style="text-align: left;">
+      <h2
+        style="font-size: 1.15rem; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; color: var(--color-accent);">
+        <svg lucideCalendar size="18" style="color: var(--toyota-red);"></svg>
+        <span>Personal Sales Ledger & YTD Earning Metrics</span>
+      </h2>
+      <p style="color: var(--color-text-secondary); font-size: 0.82rem;">
+        Verified monthly logs and achieved slab indexes filed for the current financial year.
+      </p>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 15px;">
+      <!-- Sparkline representation of sales volumes -->
+      <div
+        style="display: flex; align-items: flex-end; gap: 4px; height: 35px; border-bottom: 1px solid var(--border-color); padding: 0 4px;"
+        *ngIf="sparklineData.length > 0" title="Sales Volume Sparkline (Chronological)">
+        <div *ngFor="let val of sparklineData" [style.height.px]="val * 2 + 2"
+          style="width: 6px; background: var(--toyota-red); border-radius: 1px; min-height: 2px;"
+          [title]="val + ' cars'">
+        </div>
+      </div>
+
+      <div style="font-size: 0.9rem; font-weight: 700; color: var(--color-text-primary);">
+        YTD Earnings Total: <span style="color: var(--toyota-red);">{{ formatRupee(ytdEarningsTotal) }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="historyLogs.length === 0" class="emptyState" style="padding: 20px 0;">
+    <p>No historical logged sales filed in the corporate database.</p>
+  </div>
+
+  <div *ngIf="historyLogs.length > 0" class="tableContainer">
+    <table class="table" style="background: transparent; box-shadow: none;">
+      <thead>
+        <tr>
+          <th>Month / Period</th>
+          <th style="text-align: center;">Total Deliveries</th>
+          <th>Achieved Slab Tier</th>
+          <th style="text-align: right;">Total Incentive Earned</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let log of historyLogs">
+          <td style="font-weight: 700; text-align: left;">{{ log.month }}</td>
+          <td style="text-align: center; font-weight: 700;">
+            <span class="count-pill" style="background: rgba(0,0,0,0.03);">{{ log.totalCars }} units</span>
+          </td>
+          <td style="text-align: left;">
+            <span class="slab-badge"
+              [class.slab-platinum]="log.slabAchieved.includes('Gold') || log.slabAchieved.includes('Platinum') || log.slabAchieved.includes('Diamond')"
+              [class.slab-silver]="log.slabAchieved.includes('Silver')"
+              [class.slab-bronze]="log.slabAchieved.includes('Bronze') || log.slabAchieved.includes('Standard')">
+              {{ log.slabAchieved }}
+            </span>
+          </td>
+          <td style="text-align: right; font-weight: 700; color: var(--toyota-red); font-family: var(--font-mono);">
+            {{ formatRupee(log.incentiveEarned) }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,0 +1,294 @@
+<div class="panel glass-panel" style="margin: 0; border: none; box-shadow: none; background: transparent; padding: 0;">
+  <div
+    style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px;">
+    <div>
+      <h2 style="font-size: 1.25rem; margin-bottom: 6px;">Sales Officers Directory</h2>
+      <p style="color: var(--color-text-secondary); font-size: 0.88rem;">
+        Manage employee HR records, set monthly sales targets, and audit active status.
+      </p>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <div class="analytics-picker-group"
+        style="margin: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 4px;">
+        <label class="analytics-label"
+          style="font-size: 0.65rem; text-transform: uppercase; margin: 0; font-weight: 700; color: var(--color-accent);">Billing
+          Target Period</label>
+        <input type="month" class="analytics-picker" style="height: 38px;" [ngModel]="analyticsMonth"
+          (ngModelChange)="onMonthChange($event)" />
+      </div>
+      <button class="primaryBtn" style="padding: 8px 16px; font-size: 0.85rem; height: 38px; margin-top: auto;"
+        (click)="openAddOfficerModal()">
+        <svg lucidePlus size="16"></svg>
+        <span>Register Officer</span>
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="isLoadingOfficers" class="emptyState" style="padding: 40px 0;">
+    <svg lucideRefreshCw class="animate-spin" size="24" style="margin: 0 auto 10px; display: block;"></svg>
+    <p>Loading Sales Officer directory...</p>
+  </div>
+
+  <div *ngIf="!isLoadingOfficers && officers.length === 0" class="emptyState">
+    <svg lucideUsers size="40" class="emptyIcon" style="margin-bottom: 12px; display: block;"></svg>
+    <p>No sales officers registered. Click 'Register Officer' to set up profiles.</p>
+  </div>
+
+  <div *ngIf="!isLoadingOfficers && officers.length > 0">
+    <div class="tableContainer">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Sales Officer Details</th>
+            <th>Employee ID</th>
+            <th>Designation & Branch</th>
+            <th style="width: 120px; text-align: center;">Status</th>
+            <th style="text-align: center; width: 140px;">Current Target</th>
+            <th style="text-align: left; min-width: 240px;">Performance Snapshot ({{ analyticsMonth }})</th>
+            <th style="text-align: right; width: 100px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let officer of officers">
+            <td>
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <div class="avatar"
+                  style="width: 32px; height: 32px; font-size: 0.8rem; background: var(--color-accent); display: flex; align-items: center; justify-content: center; color: white; border-radius: 50%;">
+                  {{ getInitials(officer.name) }}
+                </div>
+                <div style="display: flex; flex-direction: column;">
+                  <span style="font-weight: 700; color: var(--color-text-primary);">{{ officer.name }}</span>
+                  <span style="font-size: 0.78rem; color: var(--color-text-muted);">@{{ officer.username }}</span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span
+                style="font-family: var(--font-mono); font-size: 0.85rem; font-weight: 600; padding: 2px 6px; background: rgba(0,0,0,0.03); border: 1px solid var(--border-color); border-radius: 4px;">
+                {{ officer.employee_id || 'TKM-Pending' }}
+              </span>
+            </td>
+            <td>
+              <div style="display: flex; flex-direction: column;">
+                <span style="font-size: 0.88rem; font-weight: 500;">{{ officer.designation || 'Sales Officer'
+                  }}</span>
+                <span style="font-size: 0.75rem; color: var(--color-text-muted);">Branch: {{ officer.branch_code ||
+                  'N/A' }} | Manager: {{ officer.reporting_manager || 'None' }}</span>
+              </div>
+            </td>
+            <td style="text-align: center;">
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <input type="checkbox" [checked]="officer.active"
+                    (change)="onToggleOfficerStatusTrigger(officer, !officer.active)"
+                    style="cursor: pointer; width: 16px; height: 16px; accent-color: var(--color-success);" />
+                  <span class="statusBadge" [class.statusActive]="officer.active"
+                    [class.statusInactive]="!officer.active" style="padding: 2px 6px; font-size: 0.7rem;">
+                    {{ officer.active ? 'Active' : 'Inactive' }}
+                  </span>
+                </div>
+                <span *ngIf="!officer.active && officer.deactivation_reason"
+                  style="font-size: 0.72rem; color: var(--color-error); font-style: italic; max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                  [title]="officer.deactivation_reason">
+                  ({{ officer.deactivation_reason }})
+                </span>
+              </div>
+            </td>
+            <td style="text-align: center;">
+              <div style="display: flex; align-items: center; gap: 6px; justify-content: center;">
+                <input #targetInput type="number" min="0" [value]="officer.snapshot?.targetVolume || 0"
+                  style="width: 60px; padding: 6px; text-align: center; border: 1px solid var(--border-color); border-radius: 4px; background: rgba(255,255,255,0.05); font-weight: 700;" />
+                <button class="actionBtn" style="padding: 6px;"
+                  (click)="onSaveOfficerTarget(officer, targetInput.value)" title="Assign Target">
+                  <svg lucideSave size="14"></svg>
+                </button>
+              </div>
+            </td>
+            <td>
+              <div *ngIf="officer.snapshot" style="display: flex; flex-direction: column; gap: 4px;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 2px;">
+                  <span>
+                    Sold: <strong>{{ officer.snapshot.carsSold }}</strong>
+                    <span style="color: var(--color-text-muted);">/ {{ officer.snapshot.targetVolume || '0' }}
+                      units</span>
+                  </span>
+                  <span style="font-weight: 700; color: var(--toyota-red);">
+                    {{ formatRupee(officer.snapshot.incentiveEarned) }}
+                  </span>
+                </div>
+
+                <!-- Progress Meter -->
+                <div
+                  style="width: 100%; height: 6px; background: rgba(0,0,0,0.06); border-radius: 3px; overflow: hidden; position: relative;">
+                  <div
+                    [style.width.%]="officer.snapshot.targetVolume > 0 ? (officer.snapshot.targetProgressPct > 100 ? 100 : officer.snapshot.targetProgressPct) : 0"
+                    [style.background]="officer.snapshot.targetProgressPct >= 100 ? '#10b981' : 'var(--toyota-red)'"
+                    style="height: 100%; border-radius: 3px; transition: width 0.3s ease;">
+                  </div>
+                </div>
+                <div
+                  style="display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem;">
+                  <span style="color: var(--color-text-muted);">
+                    Achievement:
+                    <strong
+                      [style.color]="officer.snapshot.targetVolume > 0 && officer.snapshot.targetProgressPct >= 100 ? '#10b981' : ''">
+                      {{ officer.snapshot.targetVolume > 0 ? formatPercentage(officer.snapshot.targetProgressPct) :
+                      'N/A (Unassigned)' }}
+                    </strong>
+                  </span>
+                  <span *ngIf="officer.snapshot.targetVolume > 0 && officer.snapshot.targetBonusUnlocked"
+                    style="color: #10b981; font-weight: 700; display: inline-flex; align-items: center; gap: 2px;">
+                    <svg lucideSparkles size="10"></svg>
+                    <span>Bonus Unlocked!</span>
+                  </span>
+                </div>
+              </div>
+              <div *ngIf="!officer.snapshot" style="font-size: 0.8rem; color: var(--color-text-muted);">
+                No dynamic snapshot available.
+              </div>
+            </td>
+            <td style="text-align: right;">
+              <div class="actionGroup" style="justify-content: flex-end;">
+                <button class="actionBtn" (click)="openEditOfficerModal(officer)" title="Edit HR Profile">
+                  <svg lucideEdit2 size="15"></svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Register/Edit Officer Modal -->
+<div *ngIf="isOfficerModalOpen" class="modalOverlay">
+  <div class="modal glass-panel" style="max-width: 600px; max-height: 90vh; overflow-y: auto;">
+    <div class="modalHeader">
+      <h2>{{ editingOfficer ? 'Edit Profile: ' + officerName : 'Register Sales Officer' }}</h2>
+      <button class="closeBtn" (click)="isOfficerModalOpen = false">
+        <svg lucideX size="20"></svg>
+      </button>
+    </div>
+
+    <form (ngSubmit)="onSaveOfficer()">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+        <div class="formGroup">
+          <label class="formLabel" for="offUsername">Username (Sign In)</label>
+          <input class="formInput" type="text" id="offUsername" name="offUsername" placeholder="e.g. jdoe"
+            [(ngModel)]="officerUsername" [disabled]="editingOfficer !== null" required />
+        </div>
+
+        <div class="formGroup">
+          <label class="formLabel" for="offPassword">
+            {{ editingOfficer ? 'Reset Password (Optional)' : 'Password (Sign In)' }}
+          </label>
+          <input class="formInput" type="password" id="offPassword" name="offPassword" placeholder="••••••••"
+            [(ngModel)]="officerPassword" [required]="!editingOfficer" />
+        </div>
+
+        <div class="formGroup">
+          <label class="formLabel" for="offName">Full Name</label>
+          <input class="formInput" type="text" id="offName" name="offName" placeholder="e.g. John Doe"
+            [(ngModel)]="officerName" required />
+        </div>
+
+        <div class="formGroup">
+          <label class="formLabel" for="offEmail">Email Address</label>
+          <input class="formInput" type="email" id="offEmail" name="offEmail" placeholder="e.g. john@toyota.in"
+            [(ngModel)]="officerEmail" />
+        </div>
+
+        <div class="formGroup">
+          <label class="formLabel" for="offEmpId">Employee ID</label>
+          <input class="formInput" type="text" id="offEmpId" name="offEmpId" placeholder="e.g. TKM-2026-001"
+            [(ngModel)]="officerEmployeeId" required />
+          <p style="font-size: 0.72rem; color: var(--color-text-secondary); margin-top: 4px;">
+            Must match Toyota HR standard: TKM-YYYY-XXX
+          </p>
+        </div>
+
+        <div class="formGroup">
+          <label class="formLabel" for="offBranch">Branch / Dealership Code</label>
+          <input class="formInput" type="text" id="offBranch" name="offBranch" placeholder="e.g. BR-01"
+            [(ngModel)]="officerBranchCode" required />
+        </div>
+
+        <div class="formGroup">
+          <label class="formLabel" for="offManager">Reporting Manager</label>
+          <input class="formInput" type="text" id="offManager" name="offManager" placeholder="e.g. Rajesh Kumar"
+            [(ngModel)]="officerReportingManager" />
+        </div>
+
+        <div class="formGroup">
+          <label class="formLabel" for="offDoj">Date of Joining</label>
+          <input class="formInput" type="date" id="offDoj" name="offDoj" [(ngModel)]="officerDateOfJoining" required
+            style="background-color: rgba(255, 255, 255, 0.02); color: var(--color-text-primary); border: 1px solid var(--border-color); border-radius: 4px; padding: 10px; width: 100%;" />
+        </div>
+
+        <div class="formGroup">
+          <label class="formLabel" for="offDesignation">Current Designation</label>
+          <input class="formInput" type="text" id="offDesignation" name="offDesignation"
+            placeholder="e.g. Sales Executive" [(ngModel)]="officerDesignation" required />
+        </div>
+
+        <div class="formGroup">
+          <label class="formLabel" for="offContact">Contact Number</label>
+          <input class="formInput" type="text" id="offContact" name="offContact" placeholder="e.g. +91 9876543210"
+            [(ngModel)]="officerContactNumber" />
+        </div>
+      </div>
+
+      <div class="btnGroup">
+        <button class="secondaryBtn" type="button" (click)="isOfficerModalOpen = false">Cancel</button>
+        <button class="primaryBtn" type="submit" [disabled]="!officerUsername.trim() || !officerName.trim()">
+          <span>{{ editingOfficer ? 'Save Changes' : 'Register Officer' }}</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Deactivation Reason Modal -->
+<div *ngIf="isStatusReasonModalOpen" class="modalOverlay">
+  <div class="modal glass-panel" style="max-width: 450px;">
+    <div class="modalHeader">
+      <h2 style="display: flex; align-items: center; gap: 8px; color: var(--color-error);">
+        <svg lucideAlertTriangle size="22"></svg>
+        <span>Deactivation Audit</span>
+      </h2>
+      <button class="closeBtn" (click)="isStatusReasonModalOpen = false">
+        <svg lucideX size="20"></svg>
+      </button>
+    </div>
+
+    <p style="color: var(--color-text-secondary); font-size: 0.9rem; margin-bottom: 20px;">
+      To deactivate <strong>{{ statusToggleOfficer?.name }}</strong>, you must select a reason for archival and audit
+      logs. Their historical sales data will remain fully preserved.
+    </p>
+
+    <form (ngSubmit)="onConfirmStatusToggle()">
+      <div class="formGroup">
+        <label class="formLabel" for="deactReason">Reason for Inactivity</label>
+        <select class="formInput" id="deactReason" name="deactReason" [(ngModel)]="statusDeactivationReason" required
+          style="background-color: rgba(255, 255, 255, 0.02); color: var(--color-text-primary); border: 1px solid var(--border-color); border-radius: 4px; padding: 10px; width: 100%;">
+          <option value="Resigned">Resigned</option>
+          <option value="Transferred">Transferred</option>
+          <option value="On Leave">On Leave</option>
+          <option value="Sabbatical">Sabbatical</option>
+          <option value="Suspended">Suspended</option>
+          <option value="Other">Other / Retired</option>
+        </select>
+      </div>
+
+      <div class="btnGroup">
+        <button class="secondaryBtn" type="button" (click)="isStatusReasonModalOpen = false">Cancel</button>
+        <button class="primaryBtn" type="submit"
+          style="background-color: var(--color-error); box-shadow: 0 2px 6px rgba(239, 68, 68, 0.2);">
+          <span>Archive Account</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

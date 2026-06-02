@@ -5,20 +5,16 @@ import { Router } from '@angular/router';
 import {
   LucideAward,
   LucideCalendar,
-  LucideChevronLeft,
-  LucideChevronRight,
-  LucideSave,
   LucideTrendingUp,
-  LucideRefreshCw,
-  LucideAlertCircle,
-  LucideShoppingBag,
-  LucideGift,
-  LucideLogOut,
-  LucideX
+  LucideLogOut
 } from '@lucide/angular';
 import { DatabaseService, Car as Vehicle, IncentiveSlab as Slab, User, SlabScheme, ModelOverride } from '../../services/database.service';
 import { AuthService } from '../../services/auth.service';
 import { NotificationService } from '../../services/notification.service';
+
+import { SalesOfficerDashboardComponent } from './dashboard/dashboard.component';
+import { SalesOfficerSchemeComponent } from './scheme/scheme.component';
+import { SalesOfficerLedgerComponent } from './ledger/ledger.component';
 
 @Component({
   selector: 'app-sales-officer',
@@ -28,16 +24,11 @@ import { NotificationService } from '../../services/notification.service';
     FormsModule,
     LucideAward,
     LucideCalendar,
-    LucideChevronLeft,
-    LucideChevronRight,
-    LucideSave,
     LucideTrendingUp,
-    LucideRefreshCw,
-    LucideAlertCircle,
-    LucideShoppingBag,
-    LucideGift,
     LucideLogOut,
-    LucideX
+    SalesOfficerDashboardComponent,
+    SalesOfficerSchemeComponent,
+    SalesOfficerLedgerComponent
   ],
   templateUrl: './sales-officer.component.html',
   styleUrls: ['./sales-officer.component.css']
@@ -59,11 +50,9 @@ export class SalesOfficerComponent implements OnInit {
   isSaving = false;
   feedback: { type: 'success' | 'error'; message: string } | null = null;
 
-  // compliance and мотивационные metrics
   lastLoginTime = '';
   lastMonthVolume = 0;
   lastMonthIncentive = 0;
-  isConfirmSubmitModalOpen = false;
 
   historyLogs: any[] = [];
   ytdEarningsTotal = 0;
@@ -89,7 +78,6 @@ export class SalesOfficerComponent implements OnInit {
   ngOnInit() {
     this.user = this.auth.getCurrentUser();
     
-    // Create authentic and compliant security timestamp
     const d = new Date();
     d.setDate(d.getDate() - 1);
     d.setHours(10, 32, 0, 0);
@@ -106,6 +94,7 @@ export class SalesOfficerComponent implements OnInit {
   }
 
   getInitials(name: string): string {
+    if (!name) return 'SO';
     return name
       .split(' ')
       .map(n => n[0])
@@ -152,7 +141,6 @@ export class SalesOfficerComponent implements OnInit {
         this.targetVolume = userTarget ? userTarget.target_volume : 0;
       }
 
-      // Find active scheme for selected month
       const targetDate = `${this.month}-31`;
       const activeScheme = schemesData
         .filter(s => s.activation_date <= targetDate)
@@ -213,6 +201,7 @@ export class SalesOfficerComponent implements OnInit {
   }
 
   async onMonthChange(newMonth: string) {
+    this.month = newMonth;
     const baseVols: { [key: string]: number } = {};
     this.allCars.forEach(c => {
       baseVols[c.id] = 0;
@@ -223,7 +212,6 @@ export class SalesOfficerComponent implements OnInit {
     try {
       await this.fetchMonthlyLogs(newMonth, baseVols);
 
-      // Re-resolve active scheme, slabs, overrides, and targets for the new month
       const [schemesData, targetsData] = await Promise.all([
         this.db.getSchemes(),
         this.db.getTargets(newMonth)
@@ -264,14 +252,13 @@ export class SalesOfficerComponent implements OnInit {
     }
   }
 
-  updateVolume(carId: string, val: number) {
-    const current = this.volumes[carId] || 0;
-    this.volumes[carId] = Math.max(0, current + val);
+  onVolumeChanged(event: { carId: string; delta: number }) {
+    const current = this.volumes[event.carId] || 0;
+    this.volumes[event.carId] = Math.max(0, current + event.delta);
   }
 
-  updateVolumeDirect(carId: string, val: any) {
-    const parsed = parseInt(val) || 0;
-    this.volumes[carId] = Math.max(0, parsed);
+  onVolumeDirectChanged(event: { carId: string; value: number }) {
+    this.volumes[event.carId] = Math.max(0, event.value);
   }
 
   async onSaveLogs() {
@@ -358,16 +345,11 @@ export class SalesOfficerComponent implements OnInit {
       }
     });
 
-    // Add target achievement bonus if unlocked
     if (this.targetBonusUnlocked && this.activeScheme) {
       payout += this.targetBonusAmountEarned;
     }
 
     return payout;
-  }
-
-  getOverrideForCar(carId: string): ModelOverride | null {
-    return this.overrides.find(o => o.car_id === carId) || null;
   }
 
   get nextSlab(): Slab | null {
@@ -403,7 +385,6 @@ export class SalesOfficerComponent implements OnInit {
     }).format(val);
   }
 
-  // grace period submission compliance lock (5th of the month cutoff)
   get isMonthLocked(): boolean {
     if (!this.month) return false;
     const now = new Date();
@@ -414,7 +395,7 @@ export class SalesOfficerComponent implements OnInit {
     const [selYear, selMonth] = this.month.split('-').map(Number);
 
     if (selYear === currentYear && selMonth === currentMonth) {
-      return false; // active month is always editable
+      return false;
     }
 
     let isPrevMonth = false;
@@ -425,14 +406,12 @@ export class SalesOfficerComponent implements OnInit {
     }
 
     if (isPrevMonth) {
-      // previous month editable only up to 5th day
       return currentDay > 5;
     }
 
-    return true; // older months locked
+    return true;
   }
 
-  // color indicator selector card
   get incentiveColorClass(): string {
     const total = this.eligibleVolume;
     if (this.slabs.length === 0 || total < this.slabs[0].min_volume) {
@@ -445,7 +424,6 @@ export class SalesOfficerComponent implements OnInit {
     return 'incentive-green';
   }
 
-  // dynamic progress markers
   get targetProgressText(): string {
     if (this.targetVolume <= 0) return 'Monthly target not assigned yet.';
     const diff = this.targetVolume - this.eligibleVolume;
@@ -455,7 +433,6 @@ export class SalesOfficerComponent implements OnInit {
     return 'Target achieved! Dynamic bonus tier unlocked.';
   }
 
-  // next tier opportunity nudge in dynamic rupees
   get nextTierPrompt(): string {
     if (this.slabs.length === 0) return 'Slab structures not configured for this month.';
     const rate = this.activePayoutRate;
@@ -667,20 +644,5 @@ export class SalesOfficerComponent implements OnInit {
     } catch (err) {
       console.error('Error fetching history logs:', err);
     }
-  }
-
-  // Final two-step confirmation wrapper
-  onSaveLogsConfirm() {
-    if (this.isMonthLocked) return;
-    this.isConfirmSubmitModalOpen = true;
-  }
-
-  toNumber(val: any): number {
-    return Number(val) || 0;
-  }
-
-  getCarName(carId: string): string {
-    const car = this.allCars.find(c => c.id === carId);
-    return car ? `${car.model_name} ${car.base_suffix} (${car.variant})` : 'Unknown Model';
   }
 }

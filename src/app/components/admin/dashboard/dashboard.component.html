@@ -1,0 +1,205 @@
+<div class="panel glass-panel" style="margin: 0; border: none; box-shadow: none; background: transparent; padding: 0;">
+  <div class="analytics-header">
+    <div class="analytics-title">
+      <h2 style="font-size: 1.25rem; margin-bottom: 6px;">Dealership Performance Analytics</h2>
+      <p style="color: var(--color-text-secondary); font-size: 0.88rem;">
+        Real-time dealership calculations across active slabs, inventories, volumes, and calculated incentives.
+      </p>
+    </div>
+
+    <div class="analytics-actions">
+      <div class="analytics-picker-group">
+        <label for="analMonth" class="analytics-label">Billing Period</label>
+        <input type="month" id="analMonth" class="analytics-picker" [ngModel]="analyticsMonth"
+          (ngModelChange)="onMonthChange($event)" />
+      </div>
+
+      <button class="simulationBtn" (click)="onGenerateMockData()" [disabled]="isGeneratingMock"
+        title="Generate Mock Sales Data">
+        <svg *ngIf="isGeneratingMock" lucideRefreshCw class="animate-spin" size="15"></svg>
+        <svg *ngIf="!isGeneratingMock" lucideSparkles size="15"></svg>
+        <span>{{ isGeneratingMock ? 'Generating...' : 'Simulate Demo Sales' }}</span>
+      </button>
+
+      <button class="exportBtn" (click)="exportAnalyticsToCSV()" [disabled]="isLoadingStats || !stats"
+        title="Export Performance CSV">
+        <svg lucideDownload size="15"></svg>
+        <span>Export CSV</span>
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="isLoadingStats" class="emptyState" style="padding: 60px 0;">
+    <svg lucideRefreshCw class="animate-spin" size="28"
+      style="margin: 0 auto 10px; display: block; color: var(--toyota-red);"></svg>
+    <p style="font-weight: 500;">Aggregating monthly sales records and computing incentives...</p>
+  </div>
+
+  <div *ngIf="!isLoadingStats && stats">
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-icon blue">
+          <svg lucideCar size="20"></svg>
+        </div>
+        <div class="metric-data">
+          <span class="metric-num">{{ stats.totalActiveCars }}</span>
+          <span class="metric-name">Showroom Models</span>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon purple">
+          <svg lucideLayers size="20"></svg>
+        </div>
+        <div class="metric-data">
+          <span class="metric-num">{{ stats.totalSlabTiers }} Slabs</span>
+          <span class="metric-name">Active Payout Scale</span>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon green">
+          <svg lucideTrendingUp size="20"></svg>
+        </div>
+        <div class="metric-data">
+          <span class="metric-num">{{ stats.totalSalesOfficers }} Users</span>
+          <span class="metric-name">Registered Officers</span>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon red">
+          <svg lucideCar size="20" style="color: var(--toyota-red);"></svg>
+        </div>
+        <div class="metric-data">
+          <span class="metric-num">{{ stats.currentMonthVolume }} Units</span>
+          <span class="metric-name">Dealership Volume</span>
+        </div>
+      </div>
+
+      <div class="metric-card double-card">
+        <div class="metric-icon gold">
+          <span style="font-size: 1.2rem; font-weight: 800; color: #b45309;">₹</span>
+        </div>
+        <div class="metric-data">
+          <span class="metric-num red-highlight">{{ formatRupee(stats.totalPayoutDisbursed) }}</span>
+          <span class="metric-name">Total Incentive Budget</span>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon gray">
+          <span style="font-size: 1.1rem; font-weight: 700; color: #4b5563;">avg</span>
+        </div>
+        <div class="metric-data">
+          <span class="metric-num">{{ formatRupee(stats.averagePayout) }}</span>
+          <span class="metric-name">Payout / Officer</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="analysis-bulletin">
+      <div class="bulletin-item">
+        <span class="bulletin-badge top-officer">⭐ TOP PERFORMER</span>
+        <span class="bulletin-info">
+          <strong>{{ stats.topOfficerName }}</strong> cleared <strong>{{ stats.topOfficerVolume }} vehicles</strong>
+          this month!
+        </span>
+      </div>
+      <div class="bulletin-item">
+        <span class="bulletin-badge top-car">📈 HOT MODEL</span>
+        <span class="bulletin-info">
+          <strong>{{ stats.topCarModel }}</strong> is the dealer leader with <strong>{{ stats.topCarVolume }}
+            deliveries</strong>.
+        </span>
+      </div>
+    </div>
+
+    <div class="split-analytics-grid">
+      <div class="grid-col glass-card">
+        <div class="grid-col-header">
+          <h3>Sales Officer Payout Leaderboard</h3>
+          <div class="leaderboard-search">
+            <svg lucideSearch size="14" class="search-icon"></svg>
+            <input type="text" placeholder="Search by name..." [(ngModel)]="searchQuery" class="search-input" />
+          </div>
+        </div>
+
+        <div *ngIf="filteredLeaderboard.length === 0" class="empty-col-state">
+          <p>No records found matching "{{ searchQuery }}"</p>
+        </div>
+
+        <div *ngIf="filteredLeaderboard.length > 0" class="mini-table-container">
+          <table class="mini-table">
+            <thead>
+              <tr>
+                <th>Rank / Officer</th>
+                <th style="text-align: center;">Units Sold</th>
+                <th>Current Slab Tier</th>
+                <th style="text-align: right;">Payout (INR)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let officer of filteredLeaderboard; let idx = index">
+                <td>
+                  <div class="officer-identity">
+                    <span class="rank-badge" [class.gold-rank]="idx === 0" [class.silver-rank]="idx === 1">{{ idx +
+                      1 }}</span>
+                    <div class="officer-detail">
+                      <span class="officer-name">{{ officer.name }}</span>
+                      <span class="officer-sub">@{{ officer.username }}</span>
+                    </div>
+                  </div>
+                </td>
+                <td style="text-align: center; font-weight: 700;">
+                  <span class="count-pill">{{ officer.totalVolume }}</span>
+                </td>
+                <td>
+                  <span class="slab-badge" [class.slab-bronze]="officer.activeTierLabel.includes('Bronze')"
+                    [class.slab-silver]="officer.activeTierLabel.includes('Silver')"
+                    [class.slab-gold]="officer.activeTierLabel.includes('Gold')"
+                    [class.slab-platinum]="officer.activeTierLabel.includes('Platinum')"
+                    [class.slab-diamond]="officer.activeTierLabel.includes('Diamond')">
+                    {{ officer.activeTierLabel }}
+                  </span>
+                </td>
+                <td style="text-align: right; font-weight: 700; color: var(--toyota-red);">
+                  {{ formatRupee(officer.totalPayout) }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="grid-col glass-card">
+        <div class="grid-col-header">
+          <h3>Model Sales Volume Share</h3>
+        </div>
+
+        <div *ngIf="stats.carBreakdown.length === 0" class="empty-col-state">
+          <p>No showroom models sold during this billing period.</p>
+        </div>
+
+        <div *ngIf="stats.carBreakdown.length > 0" class="breakdown-list">
+          <div *ngFor="let car of stats.carBreakdown" class="breakdown-item">
+            <div class="breakdown-meta">
+              <div class="car-info-group">
+                <span class="car-model-name">{{ car.modelName }}</span>
+                <span class="car-model-variant">{{ car.variant }}</span>
+              </div>
+              <div class="car-vol-group">
+                <strong>{{ car.volume }} units</strong>
+                <span class="car-share-pct">({{ car.percentage }}% share)</span>
+              </div>
+            </div>
+
+            <div class="share-bar-container">
+              <div class="share-bar-fill" [style.width.%]="car.percentage"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
