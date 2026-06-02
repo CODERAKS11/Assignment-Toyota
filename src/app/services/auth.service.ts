@@ -9,7 +9,7 @@ import { DatabaseService, User } from './database.service';
 })
 export class AuthService {
   private currentUser: User | null = null;
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = 'https://assignment-toyota-backend.vercel.app/api';
 
   constructor(
     private db: DatabaseService,

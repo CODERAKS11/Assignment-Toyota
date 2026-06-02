@@ -114,11 +114,7 @@ export interface ReportsAndAudits {
   providedIn: 'root'
 })
 export class DatabaseService {
-  private apiUrl = typeof window !== 'undefined' && 
-                   window.location.hostname !== 'localhost' && 
-                   window.location.hostname !== '127.0.0.1'
-    ? 'https://assignment-toyota-backend.vercel.app/api'
-    : 'http://localhost:3000/api';
+  private apiUrl = 'https://assignment-toyota-backend.vercel.app/api';
 
   constructor(private http: HttpClient) {
     console.log('Toyota DMS Client: Initialized REST client proxy coordination.');
